@@ -1,0 +1,22 @@
+{
+  "name": "node-endpoint",
+  "version": "1.0.0",
+  "description": "RESTful API",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MohamadAtieh/node-endpoint.git"
+  },
+  "author": "Mohamad Atie",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MohamadAtieh/node-endpoint/issues"
+  },
+  "homepage": "https://github.com/MohamadAtieh/node-endpoint",
+  "dependencies": {
+    "express": "^4.12.1"
+  }
+}
