@@ -1,19 +1,34 @@
 # node-endpoint
 A Node.js RESTful API for user creation, authentication and settings.
 
-This API will be serving my future Android App for basic use cases:
+This API will be serving a future Android App for basic use cases:
 
 - User Login/Registration
 - User Settings - for syncing purposes
 
-This project will be using MongoDB and Mongoose for DB interaction, for now. There could be a possibility that it interacts
-with MySQL instead, but this is TBD.
+Future implementations will be pushed on a seperate branch to provide different approaches.
 
-[Passport](http://passportjs.org/) for Authentication. 
+##Database:
 
-The main purpose of this project is to illustrate the use of RESTful services with access control by either Basic, Digest or OAuth.
-These are possible with the powerful Passport module.
+- MongoDB, with Mongoose API
 
-For the mentioned use cases above I might only need Basic Authentication, but I should investigate this matter more.
+##Authentication:
+
+- [Passport](http://passportjs.org/) module.
+- Strategy:
+  - **Two-Legged OAuth2**. This basically skips the stage where a request token is exchanged for an access token assuming the client (mobile app) is a safe end and can communicate with the user (server/this). For this purpose, the client has to have a pre-defined client key:secret for authentication, along with the username and password. If all information is valid, the access token is granted and is used for any further requests.
+  - Typically, a refresh token has to be assigned accordingly once the issued one has expired. 
+
+This project will provide a full implementation of the server application with documentation. 
+
+##Current Implementation:
+
+The project implements Basic Auth for requests. This has the downside of your encoded password being sent over HTTP on each request, when it should be encrypted in some way to avoid sniffing. Periodic tokens are recommended in this case.
+
+Another downside is **@POST /api/v1/users**, which creates users on the server. This endpoint can currently be accessed from any application which could be harmful. Controlling user creation/authorization is possible with OAuth2.
+
+##Potential Problems:
+
+Safely storing the Client ID:SECRET on the client side or mobile app
 
 ###This code is open for public reviews, so feel free. Thanks.
