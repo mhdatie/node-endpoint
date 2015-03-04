@@ -3,12 +3,18 @@ var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
 var userController = require('./controllers/user');
 
+//passport related
+var passport = require('passport');
+var authController = require('./controllers/auth');
+
 mongoose.connect('mongodb://localhost:27017/infinitlee');
 
 var app = express();
 app.use(bodyParser.urlencoded({
-	extended: true;
+	extended: true
 }));
+
+app.use(passport.initialize());
 
 var port = process.env.PORT || 3000;
 
@@ -28,12 +34,12 @@ router.get('/', function(req,res){
 //User Endpoints----------------------------------
 usersRoute
 .post(userController.createUser)
-.get(userController.getUsers);
+.get(authController.isAuthenticated, userController.getUsers);
 
 userRoute
-.get(userController.getUser)
-.put(userController.updateUser)
-.delete(userController.removeUser);
+.get(authController.isAuthenticated, userController.getUser)
+.put(authController.isAuthenticated, userController.updateUser) //todo
+.delete(authController.isAuthenticated, userController.removeUser);
 //------------------------------------------------
 
 
