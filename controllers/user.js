@@ -14,6 +14,7 @@ var createUser = function(req,res){
 				if(err){
 					if(err.hasOwnProperty('code') && err.code === 11000){
 						if(err.err.indexOf("username") > -1 || err.err.indexOf("email") > -1)
+							//status(404)
 							return res.json({error: 'Username or Email already exists.'});
 					}else{
 						return res.status(400).send({error: 'Bad Request'});
