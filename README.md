@@ -1,3 +1,5 @@
+The current branch implements [ROPC](http://tools.ietf.org/html/rfc6749#section-4.3). 
+
 # node-endpoint
 A Node.js RESTful API for user creation, authentication and settings.
 
@@ -23,9 +25,21 @@ This project will provide a full implementation of the server application with d
 
 ##Current Implementation:
 
-The project implements Basic Auth for requests. This has the downside of your encoded password being sent over HTTP on each request, when it should be encrypted in some way to avoid sniffing. Periodic tokens are recommended in this case.
+The project implements Resource Owner Password Credentials for requests. This method HAS to be implemented in HTTPS (so far in HTTP). 
 
-Another downside is [@POST /api/v1/users](https://github.com/MohamadAtieh/node-endpoint/blob/master/server.js#L36), which creates users on the server. This endpoint can currently be accessed from any application which could be harmful. Controlling user creation/authorization is possible with OAuth2.
+- First, using Basic Strategy, enter Client ID and Password to autheniticate Client.
+- Second, visit the token enpoint **(/api/v1/oauth2/token)**, with the following x-www-form-uelencoded fields:
+  - grant_type: password
+  - username: user's username
+  - password: user's password
+  - scope: offline_access (todo)
+- Last, all endpoints should be surrounded with the Bearer strategy which will fetch the current active token of the authenticated user and access the data.
+
+##Todo:
+
+- Implement refresh tokens with expiry dates.
+- Validate fields and handle errors.
+- Add HTTPS.
 
 ##Potential Problems:
 
