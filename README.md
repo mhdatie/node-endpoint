@@ -1,3 +1,5 @@
+This current branch follows the Authorization Code strategy, in order to implement a two-legged OAuth, another approach should be considered. Switch to branch: [Resource Owner Password Credentials](https://github.com/MohamadAtieh/node-endpoint/tree/ROPC) to view it. 
+
 # node-endpoint
 A Node.js RESTful API for user creation, authentication and settings.
 
