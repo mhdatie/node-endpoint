@@ -38,6 +38,7 @@ The project implements Resource Owner Password Credentials for requests. This me
 ##Todo:
 
 - Implement refresh tokens with expiry dates.
+- Add limited scope to sensitive data.
 - Validate fields and handle errors.
 - Add HTTPS.
 
