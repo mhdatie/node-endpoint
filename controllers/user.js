@@ -38,7 +38,7 @@ var getUsers = function(req,res){
 
 var getUser = function(req,res){
 	//find by Id
-	User.findOne({username: req.user._id}, function(err, user){
+	User.findOne({username: req.user.username}, function(err, user){
 		if(err) return res.send(err);
 
 		return res.json(user);

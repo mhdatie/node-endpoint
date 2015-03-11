@@ -7,7 +7,6 @@ var oauth2orize = require('oauth2orize')
 var User = require('../models/user');
 var Client = require('../models/client');
 var Token = require('../models/token');
-var Code = require('../models/code');
 
 //create OAuth 2.0 server
 var server = oauth2orize.createServer();
@@ -24,94 +23,70 @@ server.deserializeClient(function(id, callback){
 	});
 });
 
-// Register authorization code grant type
-server.grant(oauth2orize.grant.code(function(client, redirectUri, user, ares, callback) {
-  // Create a new authorization code
-  var code = new Code({
-    value: uid(16),
-    clientId: client._id,
-    redirectUri: redirectUri,
-    userId: user._id
-  });
+/**
+* Grant implicit authorization.
+*
+* The callback takes the `client` requesting authorization, the authenticated
+* `user` granting access, and their response, which contains approved scope,
+* duration, etc. as parsed by the application. The application issues a token,
+* which is bound to these values.
+*/
+server.grant(oauth2orize.grant.token(function (client, user, ares, done) {
+	var value = uid(256);
 
-  // Save the auth code and check for errors
-  code.save(function(err) {
-    if (err) { return callback(err); }
+	var token = new Token();
 
-    callback(null, code.value);
-  });
+	token.value = value;
+	token.userId = user._id;
+	token.clientId = client._id;
+
+
+	Token.save(token, function (err) {
+	if (err) {
+		return done(err);
+	}
+		return done(null, token);
+	});
+
 }));
 
-// Exchange authorization codes for access tokens
-server.exchange(oauth2orize.exchange.code(function(client, code, redirectUri, callback) {
-  Code.findOne({ value: code }, function (err, authCode) {
-    if (err) { return callback(err); }
-    if (authCode === undefined) { return callback(null, false); }
-    if (client._id.toString() !== authCode.clientId) { return callback(null, false); }
-    if (redirectUri !== authCode.redirectUri) { return callback(null, false); }
+/**
+* Exchange user id and password for access tokens.
+*
+* The callback accepts the `client`, which is exchanging the user's name and password
+* from the token request for verification. If these values are validated, the
+* application issues an access token on behalf of the user who authorized the code.
+*/
+server.exchange(oauth2orize.exchange.password(function (client, username, password, scope, done) {
 
-    // Delete auth code now that it has been used
-    authCode.remove(function (err) {
-      if(err) { return callback(err); }
+	User.findOne({username : username}, function(err, user){
+		if(err) return done(err);
 
-      // Create a new access token
-      var token = new Token({
-        value: uid(256),
-        clientId: authCode.clientId,
-        userId: authCode.userId
-      });
+		if(!user) return done(null, false);
 
-      // Save the access token and check for errors
-      token.save(function (err) {
-        if (err) { return callback(err); }
+		user.verifyPassword(password, function(err, isMatch){
+			if(err) return done(err);
+			if(!isMatch) return done(null, false);
+		});
 
-        callback(null, token);
-      });
-    });
-  });
+		var value = uid(256);
+
+		var token = new Token();
+
+		token.value = value;
+		token.userId = user._id;
+		token.clientId = client._id;
+
+		token.save(function (err) {
+		if (err) {
+			return done(err);
+		}
+			return done(null, token);
+		});
+
+	});
 }));
 
-//retruns TRUE if the Authorization code/token is in DB.
-//No promt or user permission is needed.
-server.authorization(function (clientId, redirectURI, done) {
-    Client.findOneById(clientId).done(function(err, client) {
-        if (err) { return done(err); }
-        return done(null, client, redirectURI);
-    });
-}, function (client, user, done) {
-    Code.find({
-        clientId: client._id,
-        userId: user._id
-    }, function (err, code) {
-        if (err) { return done(err); }
-        if (code) {
-            return done(null, true);
-        } else {
-            return done(null,false);
-        }
-    });
-});
-
-// User authorization endpoint
-//USED TO PROMT A DIALOG
-// exports.authorization = [
-//   server.authorization(function(clientId, redirectUri, callback) {
-
-//     Client.findOne({ id: clientId }, function (err, client) {
-//       if (err) { return callback(err); }
-
-//       return callback(null, client, redirectUri);
-//     });
-//   }),
-//   function(req, res){
-//     res.render('dialog', { transactionID: req.oauth2.transactionID, user: req.user, client: req.oauth2.client });
-//   }
-// ]
-
-// User decision endpoint
-exports.decision = [
-  server.decision()
-]
 
 // Application client token exchange endpoint
 exports.token = [
