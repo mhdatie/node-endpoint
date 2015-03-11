@@ -67,23 +67,23 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 		user.verifyPassword(password, function(err, isMatch){
 			if(err) return done(err);
 			if(!isMatch) return done(null, false);
+			
+			var value = uid(256);
+
+			var token = new Token();
+
+			token.value = value;
+			token.userId = user._id;
+			token.clientId = client._id;
+
+			token.save(function (err) {
+			if (err) {
+				return done(err);
+			}
+				return done(null, token);
+			});
+
 		});
-
-		var value = uid(256);
-
-		var token = new Token();
-
-		token.value = value;
-		token.userId = user._id;
-		token.clientId = client._id;
-
-		token.save(function (err) {
-		if (err) {
-			return done(err);
-		}
-			return done(null, token);
-		});
-
 	});
 }));
 
