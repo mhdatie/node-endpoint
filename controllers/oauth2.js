@@ -24,33 +24,6 @@ server.deserializeClient(function(id, callback){
 });
 
 /**
-* Grant implicit authorization.
-*
-* The callback takes the `client` requesting authorization, the authenticated
-* `user` granting access, and their response, which contains approved scope,
-* duration, etc. as parsed by the application. The application issues a token,
-* which is bound to these values.
-*/
-server.grant(oauth2orize.grant.token(function (client, user, ares, done) {
-	var value = uid(256);
-
-	var token = new Token();
-
-	token.value = value;
-	token.userId = user._id;
-	token.clientId = client._id;
-
-
-	Token.save(token, function (err) {
-	if (err) {
-		return done(err);
-	}
-		return done(null, token);
-	});
-
-}));
-
-/**
 * Exchange user id and password for access tokens.
 *
 * The callback accepts the `client`, which is exchanging the user's name and password

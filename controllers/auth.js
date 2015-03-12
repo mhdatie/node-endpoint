@@ -10,16 +10,22 @@ var Token = require('../models/token');
 * Used to authenticate a client
 **/
 passport.use(new BasicStrategy(
-	function(username, password, callback){
-		var query = {id : username};
+	function(id, secret, callback){
+		var query = {id : id};
 		Client.findOne(query, function(err, client){
 			if(err) return callback(err);
-			
-			//todo: verify password instead/bcrypt password on pre save
-			if(!client || client.secret !== password) return callback(null, false);
 
-			return callback(null, client);
-		})
+      if(!client) return callback(null, false);
+			
+			client.verifySecret(secret, function(err, isMatch){
+        if(err) return callback(err);
+        if(!isMatch) return callback(null, false);
+
+        return callback(null, client);
+    
+      });
+
+    });
 	}
 ));
 

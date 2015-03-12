@@ -1,15 +1,32 @@
 // Required packages
 var User = require('../models/user'); //used to interact with DB
+var validator = require('validator');
 
 //Create functions for the User endpoint
-
+//TODO: Create CLIENT CREDENTIALS AUTH endpoint. ON SUCCESS: redirect to oauth2/token
 var createUser = function(req,res){
-	var user = new User(req.body);
+	//TODO: validate username & password
+	if(!validator.isAlpha(req.body.firstname)
+		 || !validator.isAlpha(req.body.lastname)
+		 || !validator.isEmail(req.body.email)){
+
+		return res.status(400).send({error:'Validation Failed'});
+	}
+
+	var user = new User();
+
+	user.email = req.body.email;
+	user.username = req.body.username;
+	user.password = req.body.password;
+	user.info.firstname = req.body.firstname;
+	user.info.lastname = req.body.lastname;
+	user.info.gender = req.body.gender;
+
 	user.validate(function(err){
 		if(err){
-			return res.status(400).send('Bad Request');
-		}else{
-			//create a function for error handling or use next()
+			return res.status(400).send({error:'Bad Request'});
+		}else{ 
+			//TODO: create a function for error handling or use next()
 			user.save(function(err, user){
 				if(err){
 					if(err.hasOwnProperty('code') && err.code === 11000){
@@ -20,7 +37,7 @@ var createUser = function(req,res){
 						return res.status(400).send({error: 'Bad Request'});
 					}
 				}
-				return res.json({message: 'New user created.'});
+				return res.json({message: 'New user created.', data: user});
 			});
 		}
 	});
