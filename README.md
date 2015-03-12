@@ -37,9 +37,12 @@ The project implements Resource Owner Password Credentials for requests. This me
 
 ##Todo:
 
+- Check if access token belongs to authenticated user AND if user exists in DB.
+- Validate fields and create a unified error handler.
 - Implement refresh tokens with expiry dates.
 - Add limited scope to sensitive data.
-- Validate fields and handle errors.
+- Implement [Client Credentials](http://tools.ietf.org/html/rfc6749#section-4.4) approach for **createUser** and **createClient** endpoints. These are endpoints that must only be accessed through the client either because it is a confidential or because the user is **not yet** authorized or in the system.
+  - For createUser(), redirect user to /oauth2/token to grant them an access token on success.
 - Add HTTPS.
 
 ##Potential Problems:
