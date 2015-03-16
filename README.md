@@ -37,7 +37,6 @@ The project implements Resource Owner Password Credentials for requests. This me
 
 ##Todo:
 
-- Check if access token belongs to authenticated user AND if user exists in DB.
 - Validate fields and create a unified error handler.
 - Implement refresh tokens with expiry dates.
 - Add limited scope to sensitive data.
