@@ -34,6 +34,8 @@ var createUser = function(req,res){
 						}
 					}
 					return res.json({message: 'New user created.', data: user});
+					//todo redirect to /oauth/token with username, password, and grant-type = offline_access
+					// to gain a refresh token.
 				});
 			}
 		});
