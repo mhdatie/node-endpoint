@@ -65,16 +65,7 @@ passport.use(new BearerStrategy(
               callback(null, user, { scope: '*' }); //define scope later
             });
 
-           }else{
-            //find by client Id only
-            Client.findOne({_id: token.clientId}, function(err, client){
-              if(err) return callback(err);
-
-              if(!client) return callback(err);
-
-              callback(null, client, { scope: '*' }); //different scope
-            });
-          }
+           }
       }
     });
   }
