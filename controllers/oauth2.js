@@ -99,7 +99,7 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, scope, done) {
 	RefreshToken.findOne({value: refreshToken }, function (err, rtoken){
 		if(err) return done(err);
-		if(!rtoken) return done(null, false); //rtoken not found. try to re-authenticate
+		if(!rtoken) return done(null, false);
 		if(client._id !== rtoken.clientId) return done(null, false); //bad request
 
 		var value = uid(256);
@@ -114,7 +114,9 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 
 		token.save(function(err){
 			if(err) return done(err);
-			//no refresh token returned, so next time, the user has to re-authenticate.
+			/**no refresh token returned, so every time,
+			/use the same refresh token to get a new access token.
+			**/
 			return done(null, token, null, {expires_in: config.token.expiresIn}); 
 		});
 
