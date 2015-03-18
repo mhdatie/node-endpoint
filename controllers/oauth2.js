@@ -1,12 +1,13 @@
 /**
 	This controller controls the flow of OAuth
 **/
-
+var config = require('../config');
 // Load required packages
 var oauth2orize = require('oauth2orize')
 var User = require('../models/user');
 var Client = require('../models/client');
 var Token = require('../models/token');
+var RefreshToken = require('../models/refreshtoken');
 
 //create OAuth 2.0 server
 var server = oauth2orize.createServer();
@@ -22,6 +23,38 @@ server.deserializeClient(function(id, callback){
 		return callback(null, client);
 	});
 });
+
+/**
+* Exchange the client id and password/secret for an access token.
+*
+* The callback accepts the `client`, which is exchanging the client's id and
+* password/secret from the token request for verification. If these values are validated, the
+* application issues an access token on behalf of the client who authorized the code.
+*/
+server.exchange(oauth2orize.exchange.clientCredentials(function (client, scope, done) {
+	var value = uid(config.token.accessTokenLength);
+	
+	//Pass in a null for user id since there is no user when using this grant type
+	var token = new Token();
+
+	token.value = value;
+	token.clientId = client._id; 
+	token.userId = null;
+	if(scope === 'undefined')
+		token.scope = null;
+	else
+		token.scope = scope;
+	token.expirationDate = config.token.calculateExpirationDate();
+
+
+	token.save(function (err) {
+	if (err) {
+		return done(err);
+	}
+		return done(null, token, {expires_in: config.token.expiresIn}); //use config
+	});
+
+}));
 
 /**
 * Exchange user id and password for access tokens.
@@ -41,25 +74,83 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 			if(err) return done(err);
 			if(!isMatch) return done(null, false);
 			
-			var value = uid(256);
+			var value = uid(config.token.accessTokenLength);
 
 			var token = new Token();
 
 			token.value = value;
 			token.userId = user._id;
 			token.clientId = client._id;
+			if(scope === 'undefined')
+				token.scope = null;
+			else
+				token.scope = scope;
+			token.expirationDate = config.token.calculateExpirationDate();
 
 			token.save(function (err) {
-			if (err) {
-				return done(err);
-			}
-				return done(null, token);
+				if (err) {
+					return done(err);
+				}
+
+				var refreshToken = null;
+
+				if(scope && scope.indexOf('offline_access')){
+					refreshValue = uid(config.token.refreshTokenLength);
+					var refreshToken = new RefreshToken();
+				
+					refreshToken.value = refreshValue;
+					refreshToken.userId = user._id;
+					refreshToken.clientId = client._id;
+					refreshToken.scope = scope;
+
+					//save refresh token
+					refreshToken.save(function(err){
+						if(err){
+							return done(err);
+						}
+
+						return done(null, token, refreshToken, {expires_in: config.token.expiresIn}); //use config instead	
+					});
+				}else{ //no refresh token - null
+					return done(null, token, refreshToken, {expires_in: config.token.expiresIn});
+				}
+
 			});
 
 		});
 	});
 }));
 
+/**
+* Exchange the refresh token for an access token.
+*
+* The callback accepts the `client`, which is exchanging the client's id from the token
+* request for verification. If this value is validated, the application issues an access
+* token on behalf of the client who authorized the code
+*/
+server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, scope, done) {
+	RefreshToken.findOne({value: refreshToken }, function (err, rtoken){
+		if(err) return done(err);
+		if(!rtoken) return done(null, false);
+		if(client._id !== rtoken.clientId) return done(null, false);
+
+		var value = uid(256);
+
+		var token = new Token();
+
+		token.value = value;
+		token.userId = rtoken.userId;
+		token.clientId = rtoken.clientId;
+		token.scope = rtoken.scope;
+		token.expirationDate = config.token.calculateExpirationDate();
+
+		token.save(function(err){
+			if(err) return done(err);
+			return done(null, token, null, {expires_in: config.token.expiresIn});
+		});
+
+	});
+}));
 
 // Application client token exchange endpoint
 exports.token = [
