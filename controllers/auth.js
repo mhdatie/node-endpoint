@@ -50,6 +50,7 @@ passport.use(new BearerStrategy(
           if(err) return callback(err);
 
           return res.json({message: 'Token deleted.'});
+          //on client side: redirect to oauth/token with grant_type = refresh_token and the refresh token
         });
 
       }else{
