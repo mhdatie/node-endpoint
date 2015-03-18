@@ -31,26 +31,6 @@ passport.use(new BasicStrategy(
 ));
 
 
-passport.use(new ClientPasswordStrategy(
-  function(id, secret, callback){
-    var query = {id : id};
-    Client.findOne(query, function(err, client){
-      if(err) return callback(err);
-
-      if(!client) return callback(null, false);
-      
-      client.verifySecret(secret, function(err, isMatch){
-        if(err) return callback(err);
-        if(!isMatch) return callback(null, false);
-
-        return callback(null, client);
-    
-      });
-
-    });
-  }
-));
-
 /**
 * Used to validate an access token for a user.
 **/
@@ -101,5 +81,4 @@ passport.use(new BearerStrategy(
 ));
 
 exports.isAuthenticated = passport.authenticate('basic', {session: false});
-exports.isClientAuthenticated = passport.authenticate('oauth2-client-password', {session: false});
 exports.isBearerAuthenticated = passport.authenticate('bearer', {session: false});
