@@ -34,6 +34,10 @@ var createUser = function(req,res){
 						}
 					}
 					return res.json({message: 'New user created.', data: user});
+					//redirect client to /oauth/token with data.user.username, data.user.password, and grant-type = offline_access
+					// to gain a refresh token.
+					
+					//-- all endpoints from this point on should use the BearerStrategy
 				});
 			}
 		});

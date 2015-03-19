@@ -25,38 +25,6 @@ server.deserializeClient(function(id, callback){
 });
 
 /**
-* Exchange the client id and password/secret for an access token.
-*
-* The callback accepts the `client`, which is exchanging the client's id and
-* password/secret from the token request for verification. If these values are validated, the
-* application issues an access token on behalf of the client who authorized the code.
-*/
-server.exchange(oauth2orize.exchange.clientCredentials(function (client, scope, done) {
-	var value = uid(config.token.accessTokenLength);
-	
-	//Pass in a null for user id since there is no user when using this grant type
-	var token = new Token();
-
-	token.value = value;
-	token.clientId = client._id; 
-	token.userId = null;
-	if(scope === 'undefined')
-		token.scope = null;
-	else
-		token.scope = scope;
-	token.expirationDate = config.token.calculateExpirationDate();
-
-
-	token.save(function (err) {
-	if (err) {
-		return done(err);
-	}
-		return done(null, token, {expires_in: config.token.expiresIn}); //use config
-	});
-
-}));
-
-/**
 * Exchange user id and password for access tokens.
 *
 * The callback accepts the `client`, which is exchanging the user's name and password
@@ -132,7 +100,7 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 	RefreshToken.findOne({value: refreshToken }, function (err, rtoken){
 		if(err) return done(err);
 		if(!rtoken) return done(null, false);
-		if(client._id !== rtoken.clientId) return done(null, false);
+		if(client._id !== rtoken.clientId) return done(null, false); //bad request
 
 		var value = uid(256);
 
@@ -146,7 +114,10 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 
 		token.save(function(err){
 			if(err) return done(err);
-			return done(null, token, null, {expires_in: config.token.expiresIn});
+			/**no refresh token returned, so every time,
+			/use the same refresh token to get a new access token.
+			**/
+			return done(null, token, null, {expires_in: config.token.expiresIn}); 
 		});
 
 	});

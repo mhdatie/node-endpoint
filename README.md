@@ -28,24 +28,28 @@ This project will provide a full implementation of the server application with d
 The project implements Resource Owner Password Credentials for requests. This method HAS to be implemented in HTTPS (so far in HTTP). 
 
 - First, using Basic Strategy, enter Client ID and Password to autheniticate Client.
-- Second, visit the token enpoint **(/api/v1/oauth2/token)**, with the following x-www-form-uelencoded fields:
+- Second, visit the token enpoint **(/api/v1/oauth/token)**, with the following x-www-form-uelencoded fields:
   - grant_type: password
   - username: user's username
   - password: user's password
-  - scope: offline_access (todo)
-- Last, all endpoints should be surrounded with the Bearer strategy which will fetch the current active token of the authenticated user and access the data.
+  - scope: offline_access (optional - to grant refresh tokens)
+- Last, all endpoints should be surrounded with the **Bearer strategy** which will fetch the current active token of the authenticated user and access the data.
+
+In case the access token was expired, redirect the user from the client side to **(/api/v1/oauth/token)**, after basic client authentication, with the following x-www-form-uelencoded fields:
+  - grant_type: refresh_token
+  - refreshToken: 'actual_refresh_token'
+
+The scope would be the same as before, offline_access, in order to use the refresh token as many as the user wants to gain new access tokens. [Reference](http://stackoverflow.com/questions/8953983/do-google-refresh-token-expire)
 
 ##Todo:
 
-- Validate fields and create a unified error handler.
-- Implement refresh tokens with expiry dates.
+- Validate redirects.
+- Create a unified error handler.
 - Add limited scope to sensitive data.
-- Implement [Client Credentials](http://tools.ietf.org/html/rfc6749#section-4.4) approach for **createUser** and **createClient** endpoints. These are endpoints that must only be accessed through the client either because it is a confidential or because the user is **not yet** authorized or in the system.
-  - For createUser(), redirect user to /oauth2/token to grant them an access token on success.
 - Add HTTPS.
 
-##Potential Problems:
+##License
 
-Safely storing the Client ID:SECRET on the client side or mobile app
+MIT
 
 ###This code is open for public reviews, so feel free. Thanks.

@@ -31,26 +31,6 @@ passport.use(new BasicStrategy(
 ));
 
 
-passport.use(new ClientPasswordStrategy(
-  function(id, secret, callback){
-    var query = {id : id};
-    Client.findOne(query, function(err, client){
-      if(err) return callback(err);
-
-      if(!client) return callback(null, false);
-      
-      client.verifySecret(secret, function(err, isMatch){
-        if(err) return callback(err);
-        if(!isMatch) return callback(null, false);
-
-        return callback(null, client);
-    
-      });
-
-    });
-  }
-));
-
 /**
 * Used to validate an access token for a user.
 **/
@@ -70,6 +50,7 @@ passport.use(new BearerStrategy(
           if(err) return callback(err);
 
           return res.json({message: 'Token deleted.'});
+          //on client side: redirect to oauth/token with grant_type = refresh_token and the refresh token
         });
 
       }else{
@@ -85,21 +66,11 @@ passport.use(new BearerStrategy(
               callback(null, user, { scope: '*' }); //define scope later
             });
 
-           }else{
-            //find by client Id only
-            Client.findOne({_id: token.clientId}, function(err, client){
-              if(err) return callback(err);
-
-              if(!client) return callback(err);
-
-              callback(null, client, { scope: '*' }); //different scope
-            });
-          }
+           }
       }
     });
   }
 ));
 
 exports.isAuthenticated = passport.authenticate('basic', {session: false});
-exports.isClientAuthenticated = passport.authenticate('oauth2-client-password', {session: false});
 exports.isBearerAuthenticated = passport.authenticate('bearer', {session: false});
