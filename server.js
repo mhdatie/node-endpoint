@@ -1,6 +1,7 @@
 var express = require('express');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
+// var https = require('https');
 var session = require('express-session');
 var userController = require('./controllers/user');
 var clientController = require('./controllers/client');
@@ -34,12 +35,12 @@ var router = express.Router();
 
 //User Routers-----------------------------------
 var usersRoute = router.route('/users');
-var userRoute = router.route('/users/:id'); //username
+var userRoute = router.route('/users/:username'); //username
 //Client Routers---------------------------------
 var clientsRoute = router.route('/clients');
 //OAuth2 Routers
-var authTokenRoute = router.route('/oauth2/authorize');
-var accessTokenRoute = router.route('/oauth2/token');
+var accessTokenRoute = router.route('/oauth/token');
+var clientAccessTokenRoute = router.route('/oauth/c/token');
 
 
 //Add all API endpoints here
@@ -49,24 +50,23 @@ router.get('/', function(req,res){
 
 //User Endpoints----------------------------------
 usersRoute
-.post(userController.createUser)
-.get(authController.isAuthenticated, userController.getUsers);
+.post(authController.isBearerAuthenticated, userController.createUser) //todo
+.get(authController.isBearerAuthenticated, userController.getUsers);
 
 userRoute
-.get(authController.isAuthenticated, userController.getUser)
-.put(authController.isAuthenticated, userController.updateUser) //todo
-.delete(authController.isAuthenticated, userController.removeUser);
+.get(authController.isBearerAuthenticated, userController.getUser)
+.put(authController.isBearerAuthenticated, userController.updateUser) //todo
+.delete(authController.isBearerAuthenticated, userController.removeUser);
 //Client Endpoints--------------------------------
 clientsRoute
-.post(authController.isAuthenticated, clientController.createClient)
-.get(authController.isAuthenticated, clientController.getClients);
+.post(authController.isBearerAuthenticated, clientController.createClient) //todo
+.get(authController.isBearerAuthenticated, clientController.getClients);
 //OAuth 2.0 Endpoints
-authTokenRoute
-.get(authController.isAuthenticated, oauth2Controller.authorization)
-.post(authController.isAuthenticated, oauth2Controller.decision);
-
 accessTokenRoute
-.post(authController.isClientAuthenticated, oauth2Controller.token);
+.post(authController.isAuthenticated, oauth2Controller.token); //password grant
+clientAccessTokenRoute
+.post(authController.isClientAuthenticated, oauth2Controller.token); //client credentials grant
+
 
 //Register routes with /api/v1
 app.use('/api/v1', router);
