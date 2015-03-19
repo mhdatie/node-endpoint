@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 This current branch follows the Authorization Code strategy, in order to implement a two-legged OAuth, another approach should be considered. Switch to branch: [Resource Owner Password Credentials](https://github.com/MohamadAtieh/node-endpoint/tree/ROPC) to view it. 
+=======
+The current branch implements [ROPC](http://tools.ietf.org/html/rfc6749#section-4.3). 
+>>>>>>> ROPC
 
 # node-endpoint
 A Node.js RESTful API for user creation, authentication and settings.
@@ -25,12 +29,31 @@ This project will provide a full implementation of the server application with d
 
 ##Current Implementation:
 
-The project implements Basic Auth for requests. This has the downside of your encoded password being sent over HTTP on each request, when it should be encrypted in some way to avoid sniffing. Periodic tokens are recommended in this case.
+The project implements Resource Owner Password Credentials for requests. This method HAS to be implemented in HTTPS (so far in HTTP). 
 
-Another downside is [@POST /api/v1/users](https://github.com/MohamadAtieh/node-endpoint/blob/master/server.js#L36), which creates users on the server. This endpoint can currently be accessed from any application which could be harmful. Controlling user creation/authorization is possible with OAuth2.
+- First, using Basic Strategy, enter Client ID and Password to autheniticate Client.
+- Second, visit the token enpoint **(/api/v1/oauth/token)**, with the following x-www-form-uelencoded fields:
+  - grant_type: password
+  - username: user's username
+  - password: user's password
+  - scope: offline_access (optional - to grant refresh tokens)
+- Last, all endpoints should be surrounded with the **Bearer strategy** which will fetch the current active token of the authenticated user and access the data.
 
-##Potential Problems:
+In case the access token was expired, redirect the user from the client side to **(/api/v1/oauth/token)**, after basic client authentication, with the following x-www-form-uelencoded fields:
+  - grant_type: refresh_token
+  - refreshToken: 'actual_refresh_token'
 
-Safely storing the Client ID:SECRET on the client side or mobile app
+The scope would be the same as before, offline_access, in order to use the refresh token as many as the user wants to gain new access tokens. [Reference](http://stackoverflow.com/questions/8953983/do-google-refresh-token-expire)
+
+##Todo:
+
+- Validate redirects.
+- Create a unified error handler.
+- Add limited scope to sensitive data.
+- Add HTTPS.
+
+##License
+
+MIT
 
 ###This code is open for public reviews, so feel free. Thanks.

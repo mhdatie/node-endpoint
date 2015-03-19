@@ -1,30 +1,47 @@
 // Required packages
 var User = require('../models/user'); //used to interact with DB
+var userHelpers = require('./helpers/user');
 
 //Create functions for the User endpoint
-
-var createUser = function(req,res){
-	var user = new User(req.body);
-	user.validate(function(err){
-		if(err){
-			return res.status(400).send('Bad Request');
-		}else{
-			//create a function for error handling or use next()
-			user.save(function(err, user){
-				if(err){
-					if(err.hasOwnProperty('code') && err.code === 11000){
-						if(err.err.indexOf("username") > -1 || err.err.indexOf("email") > -1)
-							//status(404)
-							return res.json({error: 'Username or Email already exists.'});
-					}else{
-						return res.status(400).send({error: 'Bad Request'});
-					}
-				}
-				return res.json({message: 'New user created.'});
-			});
-		}
-	});
+//TODO: Create CLIENT CREDENTIALS AUTH endpoint. ON SUCCESS: redirect to oauth2/token
+var createUser = function(req,res){		
 	
+	userHelpers.validateCreateUser(req, function(isError){
+		if(isError) return res.status(400).send({error:'Bad Request', message:'validate'});
+
+		var user = new User();
+
+		user.email = req.body.email;
+		user.username = req.body.username;
+		user.password = req.body.password;
+		user.info.firstname = req.body.firstname;
+		user.info.lastname = req.body.lastname;
+		user.info.gender = req.body.gender;
+
+		user.validate(function(err){
+			if(err){
+				return res.status(400).send({error:'Bad Request', message:'missing'});
+			}else{ 
+				//TODO: create a function for error handling or use next()
+				user.save(function(err, user){
+					if(err){
+						if(err.hasOwnProperty('code') && err.code === 11000){
+							if(err.err.indexOf("username") > -1 || err.err.indexOf("email") > -1)
+								//status(404)
+								return res.json({error: 'Username or Email already exists.'});
+						}else{
+							return res.status(400).send({error: 'Bad Request'});
+						}
+					}
+					return res.json({message: 'New user created.', data: user});
+					//redirect client to /oauth/token with data.user.username, data.user.password, and grant-type = offline_access
+					// to gain a refresh token.
+					
+					//-- all endpoints from this point on should use the BearerStrategy
+				});
+			}
+		});
+	});
 };
 
 var getUsers = function(req,res){
@@ -38,10 +55,17 @@ var getUsers = function(req,res){
 
 var getUser = function(req,res){
 	//find by Id
-	User.findOne({username: req.user._id}, function(err, user){
+	User.findOne({username: req.params.username}, function(err, user){
 		if(err) return res.send(err);
-
-		return res.json(user);
+		if(req.user.username === req.params.username){
+			return res.json(user);
+		}else{
+			//TODO: limited scope to non-autherized user.
+			var u = {
+				username: user.username //example
+			};
+			return res.json(u);
+		}
 	});
 };
 
@@ -55,7 +79,7 @@ var updateUser = function(req,res){
 //use req.user.username
 var removeUser = function(req,res){
 	//find by Id and remove from db
-	User.findByIdAndRemove(req.params.id, function(err){
+	User.findByIdAndRemove(req.user._id, function(err){
 		if(err) return res.send(err);
 
 		return res.json({message: 'User deleted.'});

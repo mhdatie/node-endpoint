@@ -1,13 +1,13 @@
 /**
 	This controller controls the flow of OAuth
 **/
-
+var config = require('../config');
 // Load required packages
 var oauth2orize = require('oauth2orize')
 var User = require('../models/user');
 var Client = require('../models/client');
 var Token = require('../models/token');
-var Code = require('../models/code');
+var RefreshToken = require('../models/refreshtoken');
 
 //create OAuth 2.0 server
 var server = oauth2orize.createServer();
@@ -24,94 +24,104 @@ server.deserializeClient(function(id, callback){
 	});
 });
 
-// Register authorization code grant type
-server.grant(oauth2orize.grant.code(function(client, redirectUri, user, ares, callback) {
-  // Create a new authorization code
-  var code = new Code({
-    value: uid(16),
-    clientId: client._id,
-    redirectUri: redirectUri,
-    userId: user._id
-  });
+/**
+* Exchange user id and password for access tokens.
+*
+* The callback accepts the `client`, which is exchanging the user's name and password
+* from the token request for verification. If these values are validated, the
+* application issues an access token on behalf of the user who authorized the code.
+*/
+server.exchange(oauth2orize.exchange.password(function (client, username, password, scope, done) {
 
-  // Save the auth code and check for errors
-  code.save(function(err) {
-    if (err) { return callback(err); }
+	User.findOne({username : username}, function(err, user){
+		if(err) return done(err);
 
-    callback(null, code.value);
-  });
+		if(!user) return done(null, false);
+
+		user.verifyPassword(password, function(err, isMatch){
+			if(err) return done(err);
+			if(!isMatch) return done(null, false);
+			
+			var value = uid(config.token.accessTokenLength);
+
+			var token = new Token();
+
+			token.value = value;
+			token.userId = user._id;
+			token.clientId = client._id;
+			if(scope === 'undefined')
+				token.scope = null;
+			else
+				token.scope = scope;
+			token.expirationDate = config.token.calculateExpirationDate();
+
+			token.save(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				var refreshToken = null;
+
+				if(scope && scope.indexOf('offline_access')){
+					refreshValue = uid(config.token.refreshTokenLength);
+					var refreshToken = new RefreshToken();
+				
+					refreshToken.value = refreshValue;
+					refreshToken.userId = user._id;
+					refreshToken.clientId = client._id;
+					refreshToken.scope = scope;
+
+					//save refresh token
+					refreshToken.save(function(err){
+						if(err){
+							return done(err);
+						}
+
+						return done(null, token, refreshToken, {expires_in: config.token.expiresIn}); //use config instead	
+					});
+				}else{ //no refresh token - null
+					return done(null, token, refreshToken, {expires_in: config.token.expiresIn});
+				}
+
+			});
+
+		});
+	});
 }));
 
-// Exchange authorization codes for access tokens
-server.exchange(oauth2orize.exchange.code(function(client, code, redirectUri, callback) {
-  Code.findOne({ value: code }, function (err, authCode) {
-    if (err) { return callback(err); }
-    if (authCode === undefined) { return callback(null, false); }
-    if (client._id.toString() !== authCode.clientId) { return callback(null, false); }
-    if (redirectUri !== authCode.redirectUri) { return callback(null, false); }
+/**
+* Exchange the refresh token for an access token.
+*
+* The callback accepts the `client`, which is exchanging the client's id from the token
+* request for verification. If this value is validated, the application issues an access
+* token on behalf of the client who authorized the code
+*/
+server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, scope, done) {
+	RefreshToken.findOne({value: refreshToken }, function (err, rtoken){
+		if(err) return done(err);
+		if(!rtoken) return done(null, false);
+		if(client._id !== rtoken.clientId) return done(null, false); //bad request
 
-    // Delete auth code now that it has been used
-    authCode.remove(function (err) {
-      if(err) { return callback(err); }
+		var value = uid(256);
 
-      // Create a new access token
-      var token = new Token({
-        value: uid(256),
-        clientId: authCode.clientId,
-        userId: authCode.userId
-      });
+		var token = new Token();
 
-      // Save the access token and check for errors
-      token.save(function (err) {
-        if (err) { return callback(err); }
+		token.value = value;
+		token.userId = rtoken.userId;
+		token.clientId = rtoken.clientId;
+		token.scope = rtoken.scope;
+		token.expirationDate = config.token.calculateExpirationDate();
 
-        callback(null, token);
-      });
-    });
-  });
+		token.save(function(err){
+			if(err) return done(err);
+			/**no refresh token returned, so every time,
+			/use the same refresh token to get a new access token.
+			**/
+			return done(null, token, null, {expires_in: config.token.expiresIn}); 
+		});
+
+	});
 }));
-
-//retruns TRUE if the Authorization code/token is in DB.
-//No promt or user permission is needed.
-server.authorization(function (clientId, redirectURI, done) {
-    Client.findOneById(clientId).done(function(err, client) {
-        if (err) { return done(err); }
-        return done(null, client, redirectURI);
-    });
-}, function (client, user, done) {
-    Code.find({
-        clientId: client._id,
-        userId: user._id
-    }, function (err, code) {
-        if (err) { return done(err); }
-        if (code) {
-            return done(null, true);
-        } else {
-            return done(null,false);
-        }
-    });
-});
-
-// User authorization endpoint
-//USED TO PROMT A DIALOG
-// exports.authorization = [
-//   server.authorization(function(clientId, redirectUri, callback) {
-
-//     Client.findOne({ id: clientId }, function (err, client) {
-//       if (err) { return callback(err); }
-
-//       return callback(null, client, redirectUri);
-//     });
-//   }),
-//   function(req, res){
-//     res.render('dialog', { transactionID: req.oauth2.transactionID, user: req.user, client: req.oauth2.client });
-//   }
-// ]
-
-// User decision endpoint
-exports.decision = [
-  server.decision()
-]
 
 // Application client token exchange endpoint
 exports.token = [
