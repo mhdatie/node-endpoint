@@ -1,5 +1,5 @@
 
-The current branch implements [ROPC](http://tools.ietf.org/html/rfc6749#section-4.3). 
+The current branch implements the [ROPC](http://tools.ietf.org/html/rfc6749#section-4.3) strategy. 
 
 # node-endpoint
 A Node.js RESTful API for user creation, authentication and settings.
@@ -7,7 +7,7 @@ A Node.js RESTful API for user creation, authentication and settings.
 This API will be serving a future Android App for basic use cases:
 
 - User Login/Registration
-- User Settings - for syncing purposes
+- User Settings [future impl]
 
 Future implementations will be pushed on a seperate branch to provide different approaches.
 
@@ -40,7 +40,7 @@ In case the access token was expired, redirect the user from the client side to 
   - grant_type: refresh_token
   - refreshToken: 'actual_refresh_token'
 
-The scope would be the same as before, offline_access, in order to use the refresh token as many as the user wants to gain new access tokens. [Reference](http://stackoverflow.com/questions/8953983/do-google-refresh-token-expire)
+The scope would be the same as before, **offline_access**, in order to use the refresh token as many as the user wants to gain new access tokens. [Reference](http://stackoverflow.com/questions/8953983/do-google-refresh-token-expire)
 
 ##Todo:
 
