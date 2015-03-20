@@ -44,9 +44,9 @@ The scope would be the same as before, offline_access, in order to use the refre
 
 ##Todo:
 
-- Validate redirects.
-- Create a unified error handler.
+- Create a unified error handler - for authentication.
 - Add limited scope to sensitive data.
+- Improve server.js file - add any missing configurations/routes/etc.
 - Add HTTPS.
 
 ##License
