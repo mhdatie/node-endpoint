@@ -7,7 +7,14 @@ var userHelpers = require('./helpers/user');
 var createUser = function(req,res){		
 	
 	userHelpers.validateCreateUser(req, function(isError){
-		if(isError) return res.status(400).send({error:'Bad Request', message:'validate'});
+
+		var response = {};
+
+		if(isError){
+			response.error = 'Bad Request';
+			response.description = 'Validation Failed';
+			return res.status(400).send(response);
+		} 
 
 		var user = new User();
 
@@ -20,23 +27,35 @@ var createUser = function(req,res){
 
 		user.validate(function(err){
 			if(err){
-				return res.status(400).send({error:'Bad Request', message:'missing'});
+				response.data = null;
+				response.error = 'Bad Request';
+				response.description = 'Missing Fields';
+				return res.status(400).send(response);
 			}else{ 
 				//TODO: create a function for error handling or use next()
 				user.save(function(err, user){
 					if(err){
 						if(err.hasOwnProperty('code') && err.code === 11000){
-							if(err.err.indexOf("username") > -1 || err.err.indexOf("email") > -1)
-								//status(404)
-								return res.json({error: 'Username or Email already exists.'});
+							if(err.err.indexOf("username") > -1 || err.err.indexOf("email") > -1){
+								response.data = null;
+								response.error = 'Bad Request';
+								response.description = 'Username or Email already exists';
+								return res.status(400).send(response);
+							}
 						}else{
-							return res.status(400).send({error: 'Bad Request'});
+							response.data = null;
+							response.error = 'Bad Request';
+							response.description = 'Some Error Occured';
+							return res.status(400).send(response);
 						}
 					}
-					return res.json({message: 'New user created.', data: user});
-					//redirect client to /oauth/token with data.user.username, data.user.password, and grant-type = offline_access
+					//redirect client to /oauth/token with data.user.username, data.user.password, and grant-type
+					//= password, scope = offline_access
 					// to gain a refresh token.
-					
+					response.data = user;
+					response.error = 'No error';
+					response.description = user.username+' was created successfully';
+					return res.status(200).send(response);
 					//-- all endpoints from this point on should use the BearerStrategy
 				});
 			}
@@ -47,20 +66,44 @@ var createUser = function(req,res){
 var getUsers = function(req,res){
 	//find all users
 	User.find(function(err,users){
-		if(err) return res.send(err);
+		var response = {};
+		if(err){
+			response.data = null;
+			response.error = 'Bad Request';
+			response.description = 'No Users Found';
+			return res.status(400).send(response);	
+		} 
 
-		return res.json(users);
+		response.data = users;
+		response.error = 'No Error';
+		response.description = 'Users returned successfully';
+		return res.status(200).send(response);
 	});
 };
 
 var getUser = function(req,res){
 	//find by Id
 	User.findOne({username: req.params.username}, function(err, user){
-		if(err) return res.send(err);
+		var response = {};
+		if(err){
+			response.data = null;
+			response.error = 'Bad Request';
+			response.description = 'Some Error Occured';
+			return res.status(400).send(response);
+		} 
+		if(!user){
+			response.data = null;
+			response.error = 'Bad Request';
+			response.description = 'User Not Found';
+			return res.status(400).send(response);
+		}
 		if(req.user.username === req.params.username){
-			return res.json(user);
+			response.data = user;
+			response.error = 'No Error';
+			response.description = 'User Found';
+			return res.status(200).send(response);
 		}else{
-			//TODO: limited scope to non-autherized user.
+			//TODO: limited scope to visitor.
 			var u = {
 				username: user.username //example
 			};
@@ -80,9 +123,17 @@ var updateUser = function(req,res){
 var removeUser = function(req,res){
 	//find by Id and remove from db
 	User.findByIdAndRemove(req.user._id, function(err){
-		if(err) return res.send(err);
-
-		return res.json({message: 'User deleted.'});
+		var response = {};
+		if(err){
+			response.data = null;
+			response.error = 'Bad Request';
+			response.description = 'User Not Found';
+			return res.status(400).send(response);
+		}
+		response.data = null;
+		response.error = 'No Error';
+		response.description = 'User deleted successfully';
+		return res.status(200).send(response);
 	});
 };
 

@@ -5,6 +5,7 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var userController = require('./controllers/user');
 var clientController = require('./controllers/client');
+var tokenController = require('./controllers/token');
 
 
 //passport related
@@ -28,7 +29,18 @@ app.use(session({
 	resave: true
 }));
 
+
+app.use(function (err, req, res, next) {
+	if (err) {
+		res.status(err.status);
+		res.json(err);
+	} else {
+		next();
+	}
+});
+
 var port = process.env.PORT || 3000;
+
 
 //Add all routes to the router object and extend them accordingly
 var router = express.Router();
@@ -40,8 +52,6 @@ var userRoute = router.route('/users/:username'); //username
 var clientsRoute = router.route('/clients');
 //OAuth2 Routers
 var accessTokenRoute = router.route('/oauth/token');
-var clientAccessTokenRoute = router.route('/oauth/c/token');
-
 
 //Add all API endpoints here
 router.get('/', function(req,res){
@@ -50,26 +60,39 @@ router.get('/', function(req,res){
 
 //User Endpoints----------------------------------
 usersRoute
-.post(authController.isBearerAuthenticated, userController.createUser) //todo
+.post(authController.isAuthenticated, userController.createUser)
 .get(authController.isBearerAuthenticated, userController.getUsers);
 
 userRoute
 .get(authController.isBearerAuthenticated, userController.getUser)
-.put(authController.isBearerAuthenticated, userController.updateUser) //todo
+.put(authController.isBearerAuthenticated, userController.updateUser)
 .delete(authController.isBearerAuthenticated, userController.removeUser);
 //Client Endpoints--------------------------------
+
+//Clients are created directly from the mongo cli. These endpoints are useful when
+// clients are third party apps requesting access to the user data [another strategy]
 clientsRoute
-.post(authController.isBearerAuthenticated, clientController.createClient) //todo
-.get(authController.isBearerAuthenticated, clientController.getClients);
+.post(authController.isAuthenticated, clientController.createClient) //not required but implemented
+.get(authController.isAuthenticated, clientController.getClients); // not rrequired but implemented
+
 //OAuth 2.0 Endpoints
 accessTokenRoute
-.post(authController.isAuthenticated, oauth2Controller.token); //password grant
-clientAccessTokenRoute
-.post(authController.isClientAuthenticated, oauth2Controller.token); //client credentials grant
-
+.post(authController.isAuthenticated, oauth2Controller.token);
 
 //Register routes with /api/v1
 app.use('/api/v1', router);
+
+//From time to time we need to clean up any expired tokens
+//in the database - every 5 minutes [current]
+
+//not tested
+setInterval(function () {
+	tokenController.removeExpired(function (err) {
+		if (err) {
+			console.error("Error removing expired tokens");
+		}
+	});
+}, 25000);
 
 app.listen(port);
 

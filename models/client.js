@@ -18,7 +18,7 @@ var ClientSchema = new mongoose.Schema({
 	},
 	userId:{
 		type: String,
-		required: true	
+		default: null //null for now
 	},
 	type:{
 		type: String,

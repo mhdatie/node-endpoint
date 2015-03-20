@@ -7,7 +7,7 @@ var TokenSchema   = new mongoose.Schema({
   userId: { type: String, required: true }, //if null -> client only
   clientId: { type: String, required: true },
   expirationDate: {type: Date, required: true}, //todo config part
-  scope: {type: String, required: true}
+  scope: {type: String, default: null}
 });
 
 // Export the Mongoose model

@@ -40,6 +40,10 @@ var UserSchema = new mongoose.Schema({
 		bio: {
 			type: String,
 			default: null //optional
+		},
+		created_at: {
+			type: Date,
+			default: new Date()
 		}
 	},
 	deleted: {

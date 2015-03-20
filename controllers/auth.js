@@ -37,10 +37,12 @@ passport.use(new BasicStrategy(
 passport.use(new BearerStrategy(
   function(accessToken, callback) {
     Token.findOne({value: accessToken }, function (err, token)  {
-      if (err)  return callback(err); 
+      if (err) return callback(err); 
 
       // No token found
-      if (!token) return callback(null, false);
+      if (!token){
+        return callback(null, false);
+      }
 
       //check expiry
       if(new Date() > token.expirationDate){
@@ -66,7 +68,7 @@ passport.use(new BearerStrategy(
               callback(null, user, { scope: '*' }); //define scope later
             });
 
-           }
+          }
       }
     });
   }

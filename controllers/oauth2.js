@@ -49,12 +49,11 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 			token.value = value;
 			token.userId = user._id;
 			token.clientId = client._id;
-			if(scope === 'undefined')
-				token.scope = null;
-			else
-				token.scope = scope;
 			token.expirationDate = config.token.calculateExpirationDate();
-
+			if(scope && scope.indexOf('offline_access') !== -1){
+				token.scope = scope;
+			}
+			
 			token.save(function (err) {
 				if (err) {
 					return done(err);
@@ -62,7 +61,7 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 
 				var refreshToken = null;
 
-				if(scope && scope.indexOf('offline_access')){
+				if(scope && scope.indexOf('offline_access') !== -1){
 					refreshValue = uid(config.token.refreshTokenLength);
 					var refreshToken = new RefreshToken();
 				
@@ -76,11 +75,10 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 						if(err){
 							return done(err);
 						}
-
-						return done(null, token, refreshToken, {expires_in: config.token.expiresIn}); //use config instead	
+						return done(null, {token:token, refreshToken:refreshToken, expires_in: config.token.expiresIn}); 
 					});
 				}else{ //no refresh token - null
-					return done(null, token, refreshToken, {expires_in: config.token.expiresIn});
+					return done(null, {token:token, refreshToken:refreshToken, expires_in: config.token.expiresIn});
 				}
 
 			});
@@ -117,7 +115,7 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 			/**no refresh token returned, so every time,
 			/use the same refresh token to get a new access token.
 			**/
-			return done(null, token, null, {expires_in: config.token.expiresIn}); 
+			return done(null, {token:token, refreshToken:refreshToken, expires_in: config.token.expiresIn}); 
 		});
 
 	});
