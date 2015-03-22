@@ -1,3 +1,4 @@
+'use strict';
 // Required packages
 var User = require('../models/user'); //used to interact with DB
 var userHelpers = require('./helpers/user');
@@ -36,7 +37,7 @@ var createUser = function(req,res){
 				user.save(function(err, user){
 					if(err){
 						if(err.hasOwnProperty('code') && err.code === 11000){
-							if(err.err.indexOf("username") > -1 || err.err.indexOf("email") > -1){
+							if(err.err.indexOf('username') > -1 || err.err.indexOf('email') > -1){
 								response.data = null;
 								response.error = 'Bad Request';
 								response.description = 'Username or Email already exists';
@@ -114,10 +115,10 @@ var getUser = function(req,res){
 
 //REMOVE AND UPDATE should use req.user object to 
 //remove and update the authenticated user only.
-var updateUser = function(req,res){
-	//find by Id, get updated values, save into db
-	//todo......req.user.username
-};
+// var updateUser = function(req,res){
+// 	//find by Id, get updated values, save into db
+// 	//todo......req.user.username
+// };
 
 //use req.user.username
 var removeUser = function(req,res){
@@ -142,9 +143,9 @@ module.exports = {
 	createUser: createUser,
 	getUsers: getUsers,
 	getUser: getUser,
-	updateUser: updateUser,
+	//updateUser: updateUser,
 	removeUser: removeUser
-}
+};
 
 //alternative:
 // exports.createUser = createUser;

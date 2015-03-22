@@ -1,9 +1,30 @@
+'use strict';
 /**
 	This controller controls the flow of OAuth
 **/
-var config = require('../config');
+//move to helpers-------------------------------
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function uid (len) {
+  var buf = [];
+  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  var charlen = chars.length;
+
+  for (var i = 0; i < len; ++i) {
+    buf.push(chars[getRandomInt(0, charlen - 1)]);
+  }
+
+  return buf.join('');
+}
+
+//------------------------------------------------
+
+var config = require('../../config');
 // Load required packages
-var oauth2orize = require('oauth2orize')
+var oauth2orize = require('oauth2orize');
 var User = require('../models/user');
 var Client = require('../models/client');
 var Token = require('../models/token');
@@ -19,7 +40,9 @@ server.serializeClient(function(client, callback){
 //Register Deserialization
 server.deserializeClient(function(id, callback){
 	Client.findOne({ _id : id }, function(err, client){
-		if(err) return callback(err);
+		if(err){
+		 return callback(err);
+		}
 		return callback(null, client);
 	});
 });
@@ -34,13 +57,22 @@ server.deserializeClient(function(id, callback){
 server.exchange(oauth2orize.exchange.password(function (client, username, password, scope, done) {
 
 	User.findOne({username : username}, function(err, user){
-		if(err) return done(err);
+		if(err){
+			return done(err);
+		} 
 
-		if(!user) return done(null, false);
+		if(!user){
+			return done(null, false);
+		} 
 
 		user.verifyPassword(password, function(err, isMatch){
-			if(err) return done(err);
-			if(!isMatch) return done(null, false);
+			if(err){
+				return done(err);
+			} 
+
+			if(!isMatch){
+				return done(null, false);
+			} 
 			
 			var value = uid(config.token.accessTokenLength);
 
@@ -62,8 +94,8 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 				var refreshToken = null;
 
 				if(scope && scope.indexOf('offline_access') !== -1){
-					refreshValue = uid(config.token.refreshTokenLength);
-					var refreshToken = new RefreshToken();
+					var refreshValue = uid(config.token.refreshTokenLength);
+					refreshToken = new RefreshToken();
 				
 					refreshToken.value = refreshValue;
 					refreshToken.userId = user._id;
@@ -75,10 +107,10 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 						if(err){
 							return done(err);
 						}
-						return done(null, {token:token, refreshToken:refreshToken, expires_in: config.token.expiresIn}); 
+						return done(null, {token:token, refreshToken:refreshToken, expiresIn: config.token.expiresIn}); 
 					});
 				}else{ //no refresh token - null
-					return done(null, {token:token, refreshToken:refreshToken, expires_in: config.token.expiresIn});
+					return done(null, {token:token, refreshToken:refreshToken, expiresIn: config.token.expiresIn});
 				}
 
 			});
@@ -96,9 +128,15 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 */
 server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, scope, done) {
 	RefreshToken.findOne({value: refreshToken }, function (err, rtoken){
-		if(err) return done(err);
-		if(!rtoken) return done(null, false);
-		if(client._id !== rtoken.clientId) return done(null, false); //bad request
+		if(err){
+		 return done(err);
+		}
+		if(!rtoken){
+		 return done(null, false);
+		}
+		if(client._id !== rtoken.clientId){
+		 return done(null, false); //bad request
+		}
 
 		var value = uid(256);
 
@@ -111,11 +149,13 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 		token.expirationDate = config.token.calculateExpirationDate();
 
 		token.save(function(err){
-			if(err) return done(err);
+			if(err){
+			 return done(err);
+			}
 			/**no refresh token returned, so every time,
 			/use the same refresh token to get a new access token.
 			**/
-			return done(null, {token:token, refreshToken:refreshToken, expires_in: config.token.expiresIn}); 
+			return done(null, {token:token, refreshToken:refreshToken, expiresIn: config.token.expiresIn}); 
 		});
 
 	});
@@ -125,25 +165,8 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 exports.token = [
   server.token(),
   server.errorHandler()
-]
+];
 
-//move to helpers-------------------------------
-function uid (len) {
-  var buf = []
-    , chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    , charlen = chars.length;
 
-  for (var i = 0; i < len; ++i) {
-    buf.push(chars[getRandomInt(0, charlen - 1)]);
-  }
-
-  return buf.join('');
-};
-
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-//------------------------------------------------
 
 

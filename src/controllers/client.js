@@ -6,6 +6,7 @@ to gain partial access to user data.
 For two legged auth (current) strategy, one secret client owned by the main server is 
 enough for users authentication to grant them access and refresh tokens.
 **/
+'use strict';
 
 var Client = require('../models/client.js');
 

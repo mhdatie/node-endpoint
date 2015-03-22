@@ -1,3 +1,5 @@
+'use strict';
+
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
 
@@ -41,7 +43,7 @@ var UserSchema = new mongoose.Schema({
 			type: String,
 			default: null //optional
 		},
-		created_at: {
+		createdAt: {
 			type: Date,
 			default: new Date()
 		}
@@ -60,13 +62,19 @@ var UserSchema = new mongoose.Schema({
 UserSchema.pre('save', function(callback){
 	var user = this;
 
-	if(!user.isModified('password')) return callback();
+	if(!user.isModified('password')){
+		return callback();
+	}
 
 	bcrypt.genSalt(5, function(err, salt){
-		if(err) return callback(err);
+		if(err){
+			return callback(err);	
+		} 
 
 		bcrypt.hash(user.password, salt, null, function(err, hash){
-			if(err) return callback(err);
+			if(err){
+				return callback(err);
+			} 
 			user.password = hash;
 			user.salt = salt;
 			callback();
@@ -76,7 +84,9 @@ UserSchema.pre('save', function(callback){
 
 UserSchema.methods.verifyPassword = function(password, cb){
 	bcrypt.compare(password, this.password, function(err, isMatch){
-		if(err) return cb(err);
+		if(err){
+			return cb(err);
+		} 
 		cb(null, isMatch);
 	});
 };

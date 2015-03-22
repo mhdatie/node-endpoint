@@ -1,3 +1,5 @@
+'use strict';
+
 var express = require('express');
 var mongoose = require('mongoose');
 var bodyParser = require('body-parser');
@@ -55,7 +57,7 @@ var accessTokenRoute = router.route('/oauth/token');
 
 //Add all API endpoints here
 router.get('/', function(req,res){
-	res.json({ message: "node-endpoint"});
+	res.json({ message: 'node-endpoint'});
 });
 
 //User Endpoints----------------------------------
@@ -65,7 +67,7 @@ usersRoute
 
 userRoute
 .get(authController.isBearerAuthenticated, userController.getUser)
-.put(authController.isBearerAuthenticated, userController.updateUser)
+//.put(authController.isBearerAuthenticated, userController.updateUser)
 .delete(authController.isBearerAuthenticated, userController.removeUser);
 //Client Endpoints--------------------------------
 
@@ -89,7 +91,7 @@ app.use('/api/v1', router);
 setInterval(function () {
 	tokenController.removeExpired(function (err) {
 		if (err) {
-			console.error("Error removing expired tokens");
+			console.error('Error removing expired tokens');
 		}
 	});
 }, 25000);

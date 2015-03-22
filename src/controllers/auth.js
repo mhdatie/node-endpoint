@@ -1,7 +1,8 @@
+'use strict';
+
 var passport = require('passport');
 var BasicStrategy = require('passport-http').BasicStrategy;
-var BearerStrategy = require('passport-http-bearer').Strategy
-var ClientPasswordStrategy = require('passport-oauth2-client-password').Strategy;
+var BearerStrategy = require('passport-http-bearer').Strategy;
 
 var User = require('../models/user');
 var Client = require('../models/client');
@@ -14,14 +15,21 @@ passport.use(new BasicStrategy(
 	function(id, secret, callback){
     var query = {id : id};
 		Client.findOne(query, function(err, client){
-			if(err) return callback(err);
+			if(err){
+        return callback(err);
+      } 
 
-      if(!client) return callback(null, false);
+      if(!client){
+        return callback(null, false);
+      } 
 			
 			client.verifySecret(secret, function(err, isMatch){
-        if(err) return callback(err);
-        if(!isMatch) return callback(null, false);
-
+        if(err){
+          return callback(err);
+        } 
+        if(!isMatch){
+          return callback(null, false);
+        }
         return callback(null, client);
     
       });
@@ -37,7 +45,9 @@ passport.use(new BasicStrategy(
 passport.use(new BearerStrategy(
   function(accessToken, callback) {
     Token.findOne({value: accessToken }, function (err, token)  {
-      if (err) return callback(err); 
+      if (err){
+        return callback(err); 
+      } 
 
       // No token found
       if (!token){
@@ -49,9 +59,11 @@ passport.use(new BearerStrategy(
 
         //delete token
         Token.findByIdAndRemove(token._id, function(err){
-          if(err) return callback(err);
+          if(err){
+            return callback(err);
+          } 
 
-          return res.json({message: 'Token deleted.'});
+          return callback(null, false); 
           //on client side: redirect to oauth/token with grant_type = refresh_token and the refresh token
         });
 
@@ -59,10 +71,14 @@ passport.use(new BearerStrategy(
           if(token.userId !== null){
 
             User.findOne({ _id: token.userId }, function (err, user) {
-              if (err) return callback(err);
+              if (err){
+                return callback(err);
+              } 
 
               // No user found
-              if (!user) return callback(null, false);
+              if (!user){
+               return callback(null, false);
+              }
 
               // Simple example with no scope for full access
               callback(null, user, { scope: '*' }); //define scope later
