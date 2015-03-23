@@ -2,12 +2,11 @@
 The current branch implements the [ROPC](http://tools.ietf.org/html/rfc6749#section-4.3) strategy. 
 
 # node-endpoint
-A Node.js RESTful API for user creation, authentication and settings.
+A Node.js RESTful API using Express, Mongoose, Passport & Gulp. Tests are in Mocha + Supertest + Chai, and Winston for logs.
 
-This API will be serving a future Android App for basic use cases:
+Basic use case(s):
 
 - User Login/Registration
-- User Settings [future impl]
 
 Future implementations will be pushed on a seperate branch to provide different approaches.
 
@@ -44,7 +43,8 @@ The scope would be the same as before, **offline_access**, in order to use the r
 
 ##Todo:
 
-- Create a unified error handler - for authentication.
+- Perform Tests on all cases.
+- Create a unified error format.
 - Add limited scope to sensitive data.
 - Improve server.js file - add any missing configurations/routes/etc.
 - Add HTTPS.
