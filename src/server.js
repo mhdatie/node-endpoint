@@ -17,7 +17,7 @@ var oauth2Controller = require('./controllers/oauth2');
 
 mongoose.connect('mongodb://localhost:27017/infinitlee');
 
-var app = exports.app = express();
+var app = module.exports = express();
 app.use(bodyParser.urlencoded({
 	extended: true
 }));
