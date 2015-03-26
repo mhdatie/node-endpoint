@@ -126,7 +126,7 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 * request for verification. If this value is validated, the application issues an access
 * token on behalf of the client who authorized the code
 */
-server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, scope, done) {
+server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, done) {
 	RefreshToken.findOne({value: refreshToken }, function (err, rtoken){
 		if(err){
 		 return done(err);
@@ -134,10 +134,9 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 		if(!rtoken){
 		 return done(null, false);
 		}
-		if(client._id !== rtoken.clientId){
+		if(String(client._id) !== String(rtoken.clientId)){
 		 return done(null, false); //bad request
 		}
-
 		var value = uid(256);
 
 		var token = new Token();
@@ -153,9 +152,9 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 			 return done(err);
 			}
 			/**no refresh token returned, so every time,
-			/use the same refresh token to get a new access token.
+			/ use the same refresh token to get a new access token.
 			**/
-			return done(null, {token:token, refreshToken:refreshToken, expiresIn: config.token.expiresIn}); 
+			return done(null, {token:token, refreshToken: null, expiresIn: config.token.expiresIn}); 
 		});
 
 	});

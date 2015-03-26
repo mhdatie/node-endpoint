@@ -17,7 +17,7 @@ var oauth2Controller = require('./controllers/oauth2');
 
 mongoose.connect('mongodb://localhost:27017/infinitlee');
 
-var app = module.exports = express();
+var app = express();
 app.use(bodyParser.urlencoded({
 	extended: true
 }));
@@ -30,16 +30,6 @@ app.use(session({
 	saveUninitialized: true,
 	resave: true
 }));
-
-
-app.use(function (err, req, res, next) {
-	if (err) {
-		res.status(err.status);
-		res.json(err);
-	} else {
-		next();
-	}
-});
 
 var port = process.env.PORT || 3000;
 
@@ -100,4 +90,4 @@ app.listen(port);
 
 console.log('Server listening on port ' + port);
 
-exports.app = app;
+module.exports = app;

@@ -16,7 +16,7 @@ var validateCreateUser = function(req, callback){
 	if(!_v.isAlpha(firstname)||
 		!_v.isAlpha(lastname)||
 		!_v.isEmail(email)||
-		!_v.matches(gender, /[M|Fe]male/)||
+		!_v.matches(gender, /^[M|Fem]ale/)||
 		!_v.matches(username, /^[a-zA-Z][a-zA-Z0-9]{4,16}/)|| //must start with a character
 		/** uses positive lookahead
 			at least one digit, one capital letter, one special

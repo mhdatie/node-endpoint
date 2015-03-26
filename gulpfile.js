@@ -15,13 +15,13 @@ var del = require('del');
 
 //Lint Task
 gulp.task('lint', function(){
-	return gulp.src(['./*.js', './controllers/helpers/*.js', './controllers/*.js', './models/*.js'])
+	return gulp.src(['./src/*.js', './src/controllers/helpers/*.js', './src/controllers/*.js', './src/models/*.js'])
 		.pipe(jshint())
 		.pipe(jshint.reporter('default'));
 });
 //Concatenate & Minify JS
 gulp.task('scripts', function(){
-	return gulp.src(['./*.js', './controllers/helpers/*.js', './controllers/*.js', './models/*.js'])
+	return gulp.src(['./src/*.js', './src/controllers/helpers/*.js', './src/controllers/*.js', './src/models/*.js'])
 		.pipe(concat('all.js'))
 		.pipe(gulp.dest('dist'))
 		.pipe(rename('all.min.js'))
@@ -37,10 +37,10 @@ gulp.task('clean', function(cb){
 
 //Watch Files for Changes
 gulp.task('watch', function(){
-	gulp.watch(['./*.js',
-				'./controllers/helpers/*.js', 
-				'./controllers/*.js', 
-				'./models/*.js'],
+	gulp.watch(['./src/*.js',
+				'./src/controllers/helpers/*.js', 
+				'./src/controllers/*.js', 
+				'./src/models/*.js'],
 				['lint', 'scripts']);
 });
 

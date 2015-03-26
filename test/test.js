@@ -1,94 +1,42 @@
 'use strict';
 
-var request = require('supertest');
-var should = require('chai').should();
 var winston = require('winston'); //for logs
-var mongoose = require('mongoose');
-
-var app = request.agent(require('../src/server')); //express app
+//common utils
+var props = require('./common/properties');
+var reqs = require('./common/request');
+var val = require('./common/validate');
 
 var token = ''; //global
 var refreshToken = ''; //global
 
-var clientData = {
-  id: 'test',
-  secret: 'test'
-};
+var basic = {'Authorization': 'Basic ' 
+              + new Buffer(props.clientData.id + ':' + props.clientData.secret).toString('base64'),
+              'Content-Type':'application/x-www-form-urlencoded'};
 
-var userData = {
-  email: 'test@test.com',
-  username: 'test-user', //at least 5-16 and first char should be a letter
-  password: 'password', //validation fails - should include at least one upper, one digit and one special, between 8-16 chars
-  firstname: 'first',
-  lastname: 'last',
-  gender: 'Male' //either Male or Female
-  //rest are optional - won't lead to errors [TEST IT]
-};
+var bearer = {};
 
-var basic = {'Authorization': 'Basic ' + new Buffer(clientData.id + ':' + clientData.secret).toString('base64'),
-            'Content-Type': 'application/json'
-};
-var bearer = {'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-};
-
-var accessForm = {
-  username: 'matie',
-  password : '123',
-  grant_type: 'password'
-};
-
-var refreshForm = {
-  refreshToken: refreshToken,
-  grant_type: 'refresh_token'
-};
-
-/**
- - For POST-only endpoints
-**/
-var postEndpoint = function(endpoint, auth, data, next){
-  app.post(endpoint)
-    .set(auth) //adds header
-    .send(data) //sends form data
-    .end(next); //handles response
-}
-/**
- - For GET-only endpoints
-**/
-var getEndpoint = function(endpoint, auth, data, next){
-  app.get(endpoint)
-    .set(auth) //adds header
-    .send(data) //sends form data
-    .end(next); //handles response
-}
 
 //Tests for OAuth ---------------------------------------------------------------------------------------
 describe('Node API endpoints', function(){
   this.timeout(20000); //20 seconds timeout
-  
-  //make sure if mongodb running
-  before('Creating DB Connection', function(done) {
-    mongoose.createConnection('mongodb url');
-    done();
-  });
-  
-  after('Terminating DB Connection', function(done){
-    //close connection
-    mongoose.disconnect();
-    done();
-  });
 
   describe('POST /oauth/token', function(){
       
     it('should work and return a refresh token', function(done){
-      accessForm.scope = 'offline_access';
-      postEndpoint('/oauth/token', basic, accessForm, function(err, res){
-      //validate response with chai before calling done
-          
-          
+      props.accessForm.scope = 'offline_access';
+      reqs.postEndpoint('/api/v1/oauth/token', basic, props.accessForm, function(err, res){
+        //validate response with chai before calling done
+        val.validateAccessRefreshToken(res);
+
+        //set the global token and refresh token for following tests
+        token = res.body.access_token.token.value;
+        refreshToken = res.body.access_token.refreshToken.value;
+
         //exchange refresh token for a new access token
-        postEndpoint('/oauth/token', basic, refreshForm, function(err, res){
+        props.refreshForm.refresh_token = refreshToken;
+        reqs.postEndpoint('/api/v1/oauth/token', basic, props.refreshForm, function(err, res){
           //validate response with chai
+          val.validateAccessToken(res);
           done();  
         });
         
@@ -96,9 +44,10 @@ describe('Node API endpoints', function(){
     });
     
     it('should work and NOT return a refresh token', function(done){
-      accessForm.scope = 'undefined';
-      postEndpoint('/oauth/token', basic, refreshForm, function(err, res){
+      props.accessForm.scope = 'undefined';
+      reqs.postEndpoint('/api/v1/oauth/token', basic, props.refreshForm, function(err, res){
         //validate response with chai before calling done
+        val.validateAccessToken(res);
         done();
       });
     });
@@ -109,24 +58,65 @@ describe('Node API endpoints', function(){
     /**
       - Authenticate client
       - Return a new user upon creation
-    **/
-    it('should create a new user');
+    **/    
+    it('should create a new user', function(done){
+      //make sure all fields are in correct form first
+      props.userData.username = 'testUser';
+      props.userData.password = 'Passw0r$';
+      reqs.postEndpoint('/api/v1/users', basic, props.userData, function(err,res){
+        val.validateUserObject(res);
+        done();
+      });
+    });
+
   });
   
   describe('GET /users', function(){
+    
+    before(function(done){
+      bearer['Authorization'] = 'Bearer ' + token;
+      done();
+    });
+
+    after(function(done){
+      //todo: expire the token - token.expirationDate
+      done();
+    });
+
     /**
       - Authenticate the Bearer "Access" Token
       - Return a list of all users
     **/
-    it('should return a list of all users');
+    it('should return a list of all users', function(done){
+      //no data sent
+      reqs.getEndpoint('/api/v1/users', bearer, null, function(err,res){
+        val.validateUserList(res);
+        done();
+      });
+    });
   });
   
   describe('GET /users/:username', function(){
     /**
       - Authenticate the Bearer "Access" Token
-      - Return one user
+      - Return one user specified in params list - no data sent
     **/
-    it('should return a specific user');
+    it('should return a specific user full information', function(done){
+      //authenticated user
+      reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+        val.validateUserObject(res);
+        done();
+      }); 
+    });
+
+    it('should return a specific user limited information', function(done){
+      props.userData.username = 'test'; //other user
+      reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+        val.validateUserLimitedObject(res);
+        done();
+      }); 
+    });
+
   });
   
   describe('Token Expiration Case', function(){
