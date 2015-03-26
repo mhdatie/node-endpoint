@@ -4,9 +4,12 @@ var expect = require('chai').expect;
 
 var validate = {};
 
-validate.validateAccessToken = function(res){
+validate.success = function(res){
 	expect(res.status).to.equal(200);
 	expect(res.header).to.have.property('content-type').that.is.equal('application/json');
+};
+
+validate.validateAccessToken = function(res){
 	expect(Object.keys(res.body).length).to.equal(2);
 	expect(Object.keys(res.body['access_token']).length).to.equal(3);
 	expect(res.body.access_token.token.value.length).to.equal(256);
@@ -16,8 +19,6 @@ validate.validateAccessToken = function(res){
 };
 
 validate.validateAccessRefreshToken = function(res){
-	expect(res.status).to.equal(200);
-	expect(res.header).to.have.property('content-type').that.is.equal('application/json');
 	expect(Object.keys(res.body).length).to.equal(2);
 	expect(Object.keys(res.body['access_token']).length).to.equal(3);
 	expect(res.body.access_token.token.value.length).to.equal(256);
@@ -28,15 +29,29 @@ validate.validateAccessRefreshToken = function(res){
 };
 
 validate.validateUserObject = function(res){
-
+	expect(Object.keys(res.body).length).to.equal(3);
+	expect(Object.keys(res.body.data).length).to.equal(7);
+	expect(res.body.data).to.have.property.('username').that.match(/^[a-zA-Z][a-zA-Z0-9]{4,16}/);
+	expect(res.body.data).to.have.property.('password').that.match(/((?=.*\d)(?=.*[A-Z])(?=.*\W).{8,16})/);
+	expect(res.body.data).to.have.property.('email').that.match(/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/);
+	expect(Object.keys(res.body.data.info).length).to.equal(6);
+	expect(res.body.data.info).to.have.property.('firstname').that.match(/^[a-z]+$/i);
+	expect(res.body.data.info).to.have.property.('lastname').that.match(/^[a-z]+$/i);
+	expect(res.body.data.info).to.have.property.('gender').that.match(/^[M|Fem]ale/);
+	expect(res.body.data.info.deleted).to.be.false;
+	expect(res.body.data.info.admin).to.be.false;
 };
 
 validate.validateUserLimitedObject = function(res){
-
+	expect(Object.keys(res.body).length).to.equal(1);
+	expect(res.body.username).to.have.property.('username').that.match(/^[a-zA-Z][a-zA-Z0-9]{4,16}/);
 };
 
 validate.validateUserList = function(res){
-
+	expect(Object.keys(res.body).length).to.equal(1); //data array
+	expect(res.body).to.have.property('data').that.is.an('array'); //has to be an array
+	
+	// call validateUserObject or do something similar?	
 };
 
 module.exports = validate;
