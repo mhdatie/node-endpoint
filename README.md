@@ -1,5 +1,6 @@
 
 The current branch implements the [ROPC](http://tools.ietf.org/html/rfc6749#section-4.3) strategy. 
+**[View Architecture](https://github.com/FrankHassanabad/Oauth2orizeRecipes/wiki/Security-Scenarios#resource-owner-password-credentials)**
 
 # node-endpoint
 A Node.js RESTful API using Express, Mongoose, Passport & Gulp. Tests are in Mocha + Supertest + Chai, and Winston for logs.
@@ -7,8 +8,6 @@ A Node.js RESTful API using Express, Mongoose, Passport & Gulp. Tests are in Moc
 Basic use case(s):
 
 - User Login/Registration
-
-Future implementations will be pushed on a seperate branch to provide different approaches.
 
 ##Database:
 
