@@ -26,6 +26,7 @@ describe('Node API endpoints', function(){
       props.accessForm.scope = 'offline_access';
       reqs.postEndpoint('/api/v1/oauth/token', basic, props.accessForm, function(err, res){
         //validate response with chai before calling done
+        val.success(res);
         val.validateAccessRefreshToken(res);
 
         //set the global token and refresh token for following tests
