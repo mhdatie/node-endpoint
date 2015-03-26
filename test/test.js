@@ -5,6 +5,7 @@ var winston = require('winston'); //for logs
 var props = require('./common/properties');
 var reqs = require('./common/request');
 var val = require('./common/validate');
+var Token = require('../src/models/token');
 
 var token = ''; //global
 var refreshToken = ''; //global
@@ -30,7 +31,7 @@ describe('Node API endpoints', function(){
         val.validateAccessRefreshToken(res);
 
         //set the global token and refresh token for following tests
-        token = res.body.access_token.token.value;
+        token = res.body.access_token.token;
         refreshToken = res.body.access_token.refreshToken.value;
 
         //exchange refresh token for a new access token
@@ -78,13 +79,19 @@ describe('Node API endpoints', function(){
   describe('GET /users', function(){
     
     before(function(done){
-      bearer['Authorization'] = 'Bearer ' + token;
+      bearer['Authorization'] = 'Bearer ' + token.value;
       done();
     });
 
     after(function(done){
-      //todo: expire the token - token.expirationDate
-      done();
+      //expire the token - add a year to the date
+      token.expirationDate.setDate(token.expirationDate.getDate() + 365); //in days
+      Token.findByIdAndUpdate(token._id, {expirationDate : token.expirationDate}, function(err){
+         if(err){
+           done(err); //test            
+         }
+         done();
+      });
     });
 
     /**
@@ -132,7 +139,26 @@ describe('Node API endpoints', function(){
       - The user's token has expired, use refresh token to get a new one
       - Get the user again
     **/
-    it('should return false indicating an expired token and return a new one');
+    it('should return false indicating an expired token and return a new one', function(done){
+       reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+        //validate error - todo
+        reqs.postEndpoint('/api/v1/oauth/token', basic, props.refreshForm, function(err, res){
+          val.success(res);
+          val.validateAccessToken(res);
+          
+          token = res.body.access_token.token;
+          bearer['Authorization'] = 'Bearer ' + token.value;
+          
+          reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+              val.success(res);
+              val.validateUserObject(res);
+              done();            
+          });
+        });
+        
+      }); 
+    });
+    
   });
 
 });
