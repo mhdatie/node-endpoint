@@ -37,6 +37,7 @@ describe('Node API endpoints', function(){
         props.refreshForm.refresh_token = refreshToken;
         reqs.postEndpoint('/api/v1/oauth/token', basic, props.refreshForm, function(err, res){
           //validate response with chai
+          val.success(res);
           val.validateAccessToken(res);
           done();  
         });
@@ -48,6 +49,7 @@ describe('Node API endpoints', function(){
       props.accessForm.scope = 'undefined';
       reqs.postEndpoint('/api/v1/oauth/token', basic, props.refreshForm, function(err, res){
         //validate response with chai before calling done
+        val.success(res);
         val.validateAccessToken(res);
         done();
       });
@@ -65,6 +67,7 @@ describe('Node API endpoints', function(){
       props.userData.username = 'testUser';
       props.userData.password = 'Passw0r$';
       reqs.postEndpoint('/api/v1/users', basic, props.userData, function(err,res){
+        val.success(res);
         val.validateUserObject(res);
         done();
       });
@@ -91,6 +94,7 @@ describe('Node API endpoints', function(){
     it('should return a list of all users', function(done){
       //no data sent
       reqs.getEndpoint('/api/v1/users', bearer, null, function(err,res){
+        val.success(res);
         val.validateUserList(res);
         done();
       });
@@ -105,6 +109,7 @@ describe('Node API endpoints', function(){
     it('should return a specific user full information', function(done){
       //authenticated user
       reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+        val.success(res);
         val.validateUserObject(res);
         done();
       }); 
@@ -113,6 +118,7 @@ describe('Node API endpoints', function(){
     it('should return a specific user limited information', function(done){
       props.userData.username = 'test'; //other user
       reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+        val.success(res);
         val.validateUserLimitedObject(res);
         done();
       }); 
