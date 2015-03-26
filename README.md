@@ -43,11 +43,12 @@ The scope would be the same as before, **offline_access**, in order to use the r
 
 ##Todo:
 
-- [Validate]('./test/common/validate.js') the successful tests.
-- Test remaining pending tests.
+- [Validate]('test/common/validate.js#L30') the successful tests.
+- Test remaining [pending tests]('test/test.js#L122').
 - Create a unified error format.
+	- Test for error cases.
 - Add limited scope to sensitive data.
-- Improve server.js file - add any missing configurations/routes/etc.
+- Improve server.js file - add any missing configurations/routes/clean-up/etc.
 - Add HTTPS.
 
 ##License
