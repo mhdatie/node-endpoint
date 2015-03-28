@@ -2,18 +2,28 @@
 The current branch implements the [ROPC](http://tools.ietf.org/html/rfc6749#section-4.3) strategy. 
 **[View Architecture](https://github.com/FrankHassanabad/Oauth2orizeRecipes/wiki/Security-Scenarios#resource-owner-password-credentials)**
 
+This is a good starting point for any one trying to implement a stand-alone API for different device types (mobile, tablet, PC, etc). 
+
+Make sure to understand the architecture and read through the advantages of this approach if you were willing to add more security such as detecting the device accessing the API through tokens and more!
+
+This approach can prevent two users accessing the API on different devices at the same time and notify the user by sending an email for instance. **This project does not cover all these features but can be easily extended**.
+
 # node-endpoint
 A Node.js RESTful API using Express, Mongoose, Passport & Gulp. Tests are in Mocha + Supertest + Chai, and Winston for logs.
 
-Basic use case(s):
+Basic use case:
 
-- User Login/Registration
+- User Authorization/Registration.
 
 ##Database:
 
 - MongoDB, with Mongoose API
 
-##Authentication:
+For testing, it is recommended not to mess around with the main database, instead, create a **replica set** for that purpose. In other words, a mirror DB containing the same data as the production DB.
+
+[Read More](http://stackoverflow.com/a/11571916/2898754)	
+
+##Authentication
 
 - [Passport](http://passportjs.org/) module.
 - **Strategy**:
@@ -42,9 +52,9 @@ The scope would be the same as before, **offline_access**, in order to use the r
 
 ##Todo:
 
-- [Validate](test/common/validate.js#L30) the successful tests.
-- Test for error cases - create a unified error response.
-- Update [Gulp File](gulpfile.js) to watch/run tests.
+- [Validate](test/common/validate.js#L50) user list.
+- Test for error cases.
+- Update [Gulp File](gulpfile.js) to run tests (currently tests run fine with `mocha`).
 - Add limited scope to sensitive data.
 - Improve server.js file - add any missing configurations/routes/clean-up/etc.
 - Add HTTPS.
