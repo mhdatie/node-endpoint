@@ -5,13 +5,16 @@ var winston = require('winston'); //for logs
 var props = require('./common/properties');
 var reqs = require('./common/request');
 var val = require('./common/validate');
-var Token = require('../src/models/token');
 
-var token = ''; //global
-var refreshToken = ''; //global
+// var Token = require('../src/models/token');
+var User = require('../src/models/user');
 
-var basic = {'Authorization': 'Basic ' 
-              + new Buffer(props.clientData.id + ':' + props.clientData.secret).toString('base64'),
+var token = {}; //global
+var refreshToken = {}; //global
+var user = {};
+
+var basic = {'Authorization': 'Basic ' + 
+              new Buffer(props.clientData.id+':'+props.clientData.secret).toString('base64'),
               'Content-Type':'application/x-www-form-urlencoded'};
 
 var bearer = {};
@@ -29,9 +32,8 @@ describe('Node API endpoints', function(){
         //validate response with chai before calling done
         val.success(res);
         val.validateAccessRefreshToken(res);
-
-        //set the global token and refresh token for following tests
-        token = res.body.access_token.token;
+        
+        //set the GLOBAL refresh token for following tests
         refreshToken = res.body.access_token.refreshToken.value;
 
         //exchange refresh token for a new access token
@@ -40,6 +42,8 @@ describe('Node API endpoints', function(){
           //validate response with chai
           val.success(res);
           val.validateAccessToken(res);
+          //set the GLOBAL access token for following tests
+          token = res.body.access_token.token;
           done();  
         });
         
@@ -70,6 +74,7 @@ describe('Node API endpoints', function(){
       reqs.postEndpoint('/api/v1/users', basic, props.userData, function(err,res){
         val.success(res);
         val.validateUserObject(res);
+        user = res.body.data;
         done();
       });
     });
@@ -84,14 +89,14 @@ describe('Node API endpoints', function(){
     });
 
     after(function(done){
-      //expire the token - add a year to the date
-      token.expirationDate.setDate(token.expirationDate.getDate() + 365); //in days
-      Token.findByIdAndUpdate(token._id, {expirationDate : token.expirationDate}, function(err){
-         if(err){
-           done(err); //test            
-         }
-         done();
+      //remove created user
+      User.findByIdAndRemove(user._id, function(err){
+        if(err){
+          return done(err);
+        }
+        done();
       });
+
     });
 
     /**
@@ -106,59 +111,32 @@ describe('Node API endpoints', function(){
         done();
       });
     });
-  });
   
-  describe('GET /users/:username', function(){
-    /**
-      - Authenticate the Bearer "Access" Token
-      - Return one user specified in params list - no data sent
-    **/
-    it('should return a specific user full information', function(done){
-      //authenticated user
-      reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
-        val.success(res);
-        val.validateUserObject(res);
-        done();
-      }); 
-    });
-
-    it('should return a specific user limited information', function(done){
-      props.userData.username = 'test'; //other user
-      reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
-        val.success(res);
-        val.validateUserLimitedObject(res);
-        done();
-      }); 
-    });
-
-  });
   
-  describe('Token Expiration Case', function(){
-    /**
-      - Attempt to get a user
-      - The user's token has expired, use refresh token to get a new one
-      - Get the user again
-    **/
-    it('should return false indicating an expired token and return a new one', function(done){
-       reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
-        //validate error - todo
-        reqs.postEndpoint('/api/v1/oauth/token', basic, props.refreshForm, function(err, res){
+    describe('GET /users/:username', function(){
+      /**
+        - Authenticate the Bearer "Access" Token
+        - Return one user specified in params list - no data sent
+      **/
+      it('should return a specific user full information', function(){
+        //authenticated user
+        reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
           val.success(res);
-          val.validateAccessToken(res);
-          
-          token = res.body.access_token.token;
-          bearer['Authorization'] = 'Bearer ' + token.value;
-          
-          reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
-              val.success(res);
-              val.validateUserObject(res);
-              done();            
-          });
-        });
-        
-      }); 
+          val.validateUserObject(res);
+        }); 
+      });
+
+      it('should return a specific user limited information', function(){
+        props.userData.username = 'test'; //other user
+        reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+          val.success(res);
+          val.validateUserLimitedObject(res);
+          done();
+        }); 
+      });
+
     });
-    
+
   });
 
 });

@@ -9,7 +9,6 @@ var rename = require('gulp-rename');
 var notify = require('gulp-notify');
 var nodemon = require('gulp-nodemon');
 var mocha = require('gulp-mocha');
-var karma = require('gulp-karma');
 var del = require('del');
 
 
@@ -37,7 +36,8 @@ gulp.task('clean', function(cb){
 
 //Watch Files for Changes
 gulp.task('watch', function(){
-	gulp.watch(['./src/*.js',
+	gulp.watch(['./test/*.js','./test/common/*.js',
+				'./src/*.js',
 				'./src/controllers/helpers/*.js', 
 				'./src/controllers/*.js', 
 				'./src/models/*.js'],
@@ -51,8 +51,12 @@ gulp.task('develop', ['lint','scripts'], function () {
     });
 });
 
+// gulp.task('test', function(){
+// 	return gulp.src('./test/test.js', {read: false})
+//         .pipe(mocha({reporter: 'nyan'}));
+// });
+
 // Default task
 gulp.task('default', ['clean'], function(){
-	//test with mocha here
 	gulp.start('lint','scripts','watch','develop');
 });
