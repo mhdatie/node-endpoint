@@ -56,7 +56,7 @@ The scope would be the same as before, **offline_access**, in order to use the r
 - Test for error cases.
 - Update [Gulp File](gulpfile.js) to run tests (currently tests run fine with `mocha`).
 - Add limited scope to sensitive data.
-- Improve server.js file - add any missing configurations/routes/clean-up/etc.
+- Improve server.ts file - add any missing configurations/routes/clean-up/etc.
 - Add HTTPS.
 
 ##License
