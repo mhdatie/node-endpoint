@@ -1,3 +1,6 @@
+'use strict';
+export {}
+
 /**
 This is the client controller. This can be used in the future by implementing
 Authorization codes that enable users to grant third party apps (who are owned by user accounts)
@@ -10,7 +13,7 @@ enough for users authentication to grant them access and refresh tokens.
 
 const Client = require('../models/client');
 
-const createClient = function(req,res){
+const createClient = (req, res) => {
 	let response: any = {};
 	let client = new Client();
 
@@ -23,7 +26,7 @@ const createClient = function(req,res){
 	//client.userId = req.user._id; // api is being accessed by server's client and
 									//not 3rd party apps. Default is null for now.
 
-	client.save(function(err){
+	client.save(err => {
 		if(err){
 			response.data = null;
 			response.error = 'Bad Request';
@@ -39,10 +42,10 @@ const createClient = function(req,res){
 };
 
 //get application clients of authenticated user
-const getClients = function(req,res){
+const getClients = (req,res) => {
 	let query = {userId : req.user._id}; //provided by passport
 	let response: any = {};
-	Client.find(query, function(err, clients){
+	Client.find(query, (err, clients) => {
 		if(err){
 			response.data = null;
 			response.error = 'Bad Request';

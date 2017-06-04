@@ -1,10 +1,12 @@
 {
   "compilerOptions": {
+    "module": "commonjs",
     "moduleResolution": "node",
     "target": "es5",
     "outDir": "dist",
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": ["node"]
   },
   "include": [
     "src/**/*.ts"

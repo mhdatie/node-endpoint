@@ -33,52 +33,40 @@ app.use(session({
 const port = process.env.PORT || 3000;
 
 
-//Add all routes to the router object and extend them accordingly
 const router = express.Router();
 
-//User Routers-----------------------------------
 const usersRoute = router.route('/users');
-const userRoute = router.route('/users/:username'); //username
-//Client Routers---------------------------------
+const userRoute = router.route('/users/:username');
+
 const clientsRoute = router.route('/clients');
-//OAuth2 Routers
 const accessTokenRoute = router.route('/oauth/token');
 
-//Add all API endpoints here
-router.get('/', function(req,res){
+router.get('/', (req, res) => {
 	res.json({ message: 'node-endpoint'});
 });
 
-//User Endpoints----------------------------------
 usersRoute
 .post(authController.isAuthenticated, userController.createUser)
 .get(authController.isBearerAuthenticated, userController.getUsers);
 
 userRoute
 .get(authController.isBearerAuthenticated, userController.getUser)
-//.put(authController.isBearerAuthenticated, userController.updateUser)
 .delete(authController.isBearerAuthenticated, userController.removeUser);
-//Client Endpoints--------------------------------
 
-//Clients are created directly from the mongo cli. These endpoints are useful when
-// clients are third party apps requesting access to the user data [another strategy]
 clientsRoute
 .post(authController.isAuthenticated, clientController.createClient) //not required but implemented
 .get(authController.isAuthenticated, clientController.getClients); // not rrequired but implemented
 
-//OAuth 2.0 Endpoints
 accessTokenRoute
 .post(authController.isAuthenticated, oauth2Controller.token);
 
-//Register routes with /api/v1
 app.use('/api/v1', router);
 
-//From time to time we need to clean up any expired tokens
+//Clean up any expired tokens
 //in the database - every 5 minutes [current]
-
 //not tested
-setInterval(function () {
-	tokenController.removeExpired(function (err) {
+setInterval(()=> {
+	tokenController.removeExpired(err => {
 		if (err) {
 			console.error('Error removing expired tokens');
 		}

@@ -1,14 +1,12 @@
 'use strict';
 
-var request = require('supertest');
+const request = require('supertest');
+const app = request.agent(require('../../src/server')); //express app
 
-var app = request.agent(require('../../src/server')); //express app
-
-var requests = {};
 /**
  - For POST-only endpoints
 **/
-requests.postEndpoint = function(endpoint, auth, data, next){
+const postEndpoint = (endpoint, auth, data, next) => {
   app.post(endpoint)
     .set(auth) //adds header
     .send(data) //sends form data
@@ -17,11 +15,14 @@ requests.postEndpoint = function(endpoint, auth, data, next){
 /**
  - For GET-only endpoints
 **/
-requests.getEndpoint = function(endpoint, auth, data, next){
+const getEndpoint = (endpoint, auth, data, next) => {
   app.get(endpoint)
     .set(auth) //adds header
     .send(data) //sends form data
     .end(next); //handles response
 };
 
-module.exports = requests;
+module.exports = {
+    postEndpoint,
+    getEndpoint
+};

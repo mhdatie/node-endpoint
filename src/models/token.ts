@@ -1,4 +1,5 @@
-// Load required packages
+'use strict';
+export {}
 
 const mongoose = require('mongoose');
 

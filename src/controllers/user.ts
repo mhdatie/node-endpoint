@@ -1,13 +1,14 @@
 'use strict';
+
 // Required packages
 const User = require('../models/user'); //used to interact with DB
 const userHelpers = require('./helpers/user');
 
 //Create functions for the User endpoint
 //TODO: Create CLIENT CREDENTIALS AUTH endpoint. ON SUCCESS: redirect to oauth2/token
-const createUser = function(req,res){
+const createUser = (req,res) => {
 	
-	userHelpers.validateCreateUser(req, function(isError){
+	userHelpers.validateCreateUser(req, (isError) => {
 
 		let response: any = {};
 
@@ -26,15 +27,15 @@ const createUser = function(req,res){
 		user.info.lastname = req.body.lastname;
 		user.info.gender = req.body.gender;
 
-		user.validate(function(err){
+		user.validate(err => {
 			if(err){
 				response.data = null;
 				response.error = 'Bad Request';
 				response.description = 'Missing Fields';
 				return res.status(400).send(response);
 			}else{ 
-				//TODO: create a function for error handling or use next()
-				user.save(function(err, user){
+				//TODO: create a  for error handling or use next()
+				user.save((err, user) => {
 					if(err){
 						if(err.hasOwnProperty('code') && err.code === 11000){
 							if(err.err.indexOf('username') > -1 || err.err.indexOf('email') > -1){
@@ -64,9 +65,9 @@ const createUser = function(req,res){
 	});
 };
 
-const getUsers = function(req,res){
+const getUsers = (req,res) => {
 	//find all users
-	User.find(function(err,users){
+	User.find((err,users) => {
 		let response: any = {};
 		if(err){
 			response.data = null;
@@ -82,9 +83,9 @@ const getUsers = function(req,res){
 	});
 };
 
-const getUser = function(req,res){
+const getUser = (req,res) => {
 	//find by Id
-	User.findOne({username: req.params.username}, function(err, user){
+	User.findOne({username: req.params.username}, (err, user) => {
 		let response: any = {};
 		if(err){
 			response.data = null;
@@ -115,15 +116,15 @@ const getUser = function(req,res){
 
 //REMOVE AND UPDATE should use req.user object to 
 //remove and update the authenticated user only.
-// var updateUser = function(req,res){
+// var updateUser = (req,res){
 // 	//find by Id, get updated values, save into db
 // 	//todo......req.user.username
 // };
 
 //use req.user.username
-const removeUser = function(req,res){
+const removeUser = (req,res) => {
 	//find by Id and remove from db
-	User.findByIdAndRemove(req.user._id, function(err){
+	User.findByIdAndRemove(req.user._id, err => {
 		let response: any = {};
 		if(err){
 			response.data = null;
@@ -146,10 +147,3 @@ module.exports = {
 	//updateUser: updateUser,
 	removeUser
 };
-
-//alternative:
-// exports.createUser = createUser;
-// exports.getUsers = getUsers;
-// exports.getUser = getUser;
-// exports.updateUser = updateUser;
-// exports.removeUser = removeUser;

@@ -1,13 +1,11 @@
 'use strict';
 
-var props = {};
-
-props.clientData = {
+let clientData = {
   id: 'test',
   secret: 'test'
 };
 
-props.userData = {
+let userData = {
   email: 'test@example.com',
   username: 'test-user', //at least 5-16 and first char should be a letter
   password: 'password', //validation fails - should include at least one upper, one digit and one special, between 8-16 chars
@@ -17,15 +15,20 @@ props.userData = {
   //rest is optional - won't lead to errors [TEST IT]
 };
 
-props.accessForm = {
+let accessForm = {
   username: 'matie',
   password : '123',
   grant_type: 'password'
 };
 
-props.refreshForm = {
+let refreshForm = {
   refresh_token: '', 
   grant_type: 'refresh_token'
 };
 
-module.exports = props;
+module.exports = {
+  clientData,
+  userData,
+  accessForm,
+  refreshForm
+};

@@ -1,4 +1,5 @@
 'use strict';
+export {}
 
 const passport = require('passport');
 const BasicStrategy = require('passport-http').BasicStrategy;
@@ -12,9 +13,9 @@ const Token = require('../models/token');
 * Used to authenticate a client 
 **/
 passport.use(new BasicStrategy(
-	function(id, secret, callback){
+	(id, secret, callback) => {
     let query = {id : id};
-		Client.findOne(query, function(err, client){
+		Client.findOne(query, (err, client) => {
 			if(err){
         return callback(err);
       } 
@@ -23,7 +24,7 @@ passport.use(new BasicStrategy(
         return callback(null, false);
       } 
 			
-			client.verifySecret(secret, function(err, isMatch){
+			client.verifySecret(secret, (err, isMatch) => {
         if(err){
           return callback(err);
         } 
@@ -43,8 +44,8 @@ passport.use(new BasicStrategy(
 * Used to validate an access token for a user.
 **/
 passport.use(new BearerStrategy(
-  function(accessToken, callback) {
-    Token.findOne({value: accessToken }, function (err, token)  {
+  (accessToken, callback) => {
+    Token.findOne({value: accessToken }, (err, token) => {
       if (err){
         return callback(err); 
       } 
@@ -58,7 +59,7 @@ passport.use(new BearerStrategy(
       if(new Date() > token.expirationDate){
 
         //delete token
-        Token.findByIdAndRemove(token._id, function(err){
+        Token.findByIdAndRemove(token._id, (err) => {
           if(err){
             return callback(err);
           } 
@@ -70,7 +71,7 @@ passport.use(new BearerStrategy(
       }else{
           if(token.userId !== null){
 
-            User.findOne({ _id: token.userId }, function (err, user) {
+            User.findOne({ _id: token.userId },  (err, user) => {
               if (err){
                 return callback(err);
               } 

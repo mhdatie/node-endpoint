@@ -1,23 +1,26 @@
 'use strict';
 
-var winston = require('winston'); //for logs
-//common utils
-var props = require('./common/properties');
-var reqs = require('./common/request');
-var val = require('./common/validate');
+const req = require('./common/properties');
+const prop = require('./common/request');
+const val = require('./common/validate');
 
-// var Token = require('../src/models/token');
-var User = require('../src/models/user');
+const clientData = prop.clientData;
+const accessForm = prop.accessForm;
+const refreshForm = prop.refreshForm;
+const userData = prop.userData;
 
-var token = {}; //global
-var refreshToken = {}; //global
-var user = {};
+// const Token = require('../src/models/token');
+const User = require('../src/models/user');
 
-var basic = {'Authorization': 'Basic ' + 
-              new Buffer(props.clientData.id+':'+props.clientData.secret).toString('base64'),
+let token = {}; //global
+let refreshToken = {}; //global
+let user = {};
+
+const basic = {'Authorization': 'Basic ' +
+              new Buffer(clientData.id+':'+ clientData.secret).toString('base64'),
               'Content-Type':'application/x-www-form-urlencoded'};
 
-var bearer = {};
+const bearer = {};
 
 
 //Tests for OAuth ---------------------------------------------------------------------------------------
@@ -27,8 +30,8 @@ describe('Node API endpoints', function(){
   describe('POST /oauth/token', function(){
       
     it('should work and return a refresh token', function(done){
-      props.accessForm.scope = 'offline_access';
-      reqs.postEndpoint('/api/v1/oauth/token', basic, props.accessForm, function(err, res){
+      accessForm.scope = 'offline_access';
+      req.postEndpoint('/api/v1/oauth/token', basic, accessForm, function(err, res){
         //validate response with chai before calling done
         val.success(res);
         val.validateAccessRefreshToken(res);
@@ -37,8 +40,8 @@ describe('Node API endpoints', function(){
         refreshToken = res.body.access_token.refreshToken.value;
 
         //exchange refresh token for a new access token
-        props.refreshForm.refresh_token = refreshToken;
-        reqs.postEndpoint('/api/v1/oauth/token', basic, props.refreshForm, function(err, res){
+        refreshForm.refresh_token = refreshToken;
+        req.postEndpoint('/api/v1/oauth/token', basic, refreshForm, function(err, res){
           //validate response with chai
           val.success(res);
           val.validateAccessToken(res);
@@ -51,8 +54,8 @@ describe('Node API endpoints', function(){
     });
     
     it('should work and NOT return a refresh token', function(done){
-      props.accessForm.scope = 'undefined';
-      reqs.postEndpoint('/api/v1/oauth/token', basic, props.refreshForm, function(err, res){
+      accessForm.scope = 'undefined';
+      req.postEndpoint('/api/v1/oauth/token', basic, refreshForm, function(err, res){
         //validate response with chai before calling done
         val.success(res);
         val.validateAccessToken(res);
@@ -69,9 +72,9 @@ describe('Node API endpoints', function(){
     **/    
     it('should create a new user', function(done){
       //make sure all fields are in correct form first
-      props.userData.username = 'testUser';
-      props.userData.password = 'Passw0r$';
-      reqs.postEndpoint('/api/v1/users', basic, props.userData, function(err,res){
+      userData.username = 'testUser';
+      userData.password = 'Passw0r$';
+      req.postEndpoint('/api/v1/users', basic, userData, function(err,res){
         val.success(res);
         val.validateUserObject(res);
         user = res.body.data;
@@ -105,7 +108,7 @@ describe('Node API endpoints', function(){
     **/
     it('should return a list of all users', function(done){
       //no data sent
-      reqs.getEndpoint('/api/v1/users', bearer, null, function(err,res){
+      req.getEndpoint('/api/v1/users', bearer, null, function(err,res){
         val.success(res);
         val.validateUserList(res);
         done();
@@ -120,15 +123,15 @@ describe('Node API endpoints', function(){
       **/
       it('should return a specific user full information', function(){
         //authenticated user
-        reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+        req.getEndpoint('/api/v1/users/'+ userData.username, bearer, null, function(err,res){
           val.success(res);
           val.validateUserObject(res);
         }); 
       });
 
       it('should return a specific user limited information', function(){
-        props.userData.username = 'test'; //other user
-        reqs.getEndpoint('/api/v1/users/'+props.userData.username, bearer, null, function(err,res){
+        userData.username = 'test'; //other user
+        req.getEndpoint('/api/v1/users/'+ userData.username, bearer, null, function(err,res){
           val.success(res);
           val.validateUserLimitedObject(res);
           done();
