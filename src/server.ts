@@ -1,30 +1,32 @@
+///<reference path="../node_modules/@types/node/index.d.ts" />
+
 'use strict';
+import {removeUser, getUser, getUsers, createUser} from "./controllers/user";
+import {isBearerAuthenticated, isAuthenticated} from "./controllers/auth";
+import {createClient, getClients} from "./controllers/client";
+import {removeExpired} from "./controllers/token";
 
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-// const https = require('https');
 const session = require('express-session');
-const userController = require('./controllers/user');
-const clientController = require('./controllers/client');
-const tokenController = require('./controllers/token');
 
 //passport related
 const passport = require('passport');
-const authController = require('./controllers/auth');
 const oauth2Controller = require('./controllers/oauth2');
 
 mongoose.connect('mongodb://localhost:27017/test-server');
 
-const app = express();
-app.use(bodyParser.urlencoded({
+const appServer = express();
+
+appServer.use(bodyParser.urlencoded({
 	extended: true
 }));
 
-app.use(passport.initialize());
+appServer.use(passport.initialize());
 
 //Use express session since OAuth2orize requires it
-app.use(session({
+appServer.use(session({
 	secret: 'Super Secret Session Key', //edit later
 	saveUninitialized: true,
 	resave: true
@@ -46,35 +48,35 @@ router.get('/', (req, res) => {
 });
 
 usersRoute
-.post(authController.isAuthenticated, userController.createUser)
-.get(authController.isBearerAuthenticated, userController.getUsers);
+.post(isAuthenticated, createUser)
+.get(isBearerAuthenticated, getUsers);
 
 userRoute
-.get(authController.isBearerAuthenticated, userController.getUser)
-.delete(authController.isBearerAuthenticated, userController.removeUser);
+.get(isBearerAuthenticated, getUser)
+.delete(isBearerAuthenticated, removeUser);
 
 clientsRoute
-.post(authController.isAuthenticated, clientController.createClient) //not required but implemented
-.get(authController.isAuthenticated, clientController.getClients); // not rrequired but implemented
+.post(createClient) //not required but implemented
+.get(isAuthenticated, getClients); // not rrequired but implemented
 
 accessTokenRoute
-.post(authController.isAuthenticated, oauth2Controller.token);
+.post(isAuthenticated, oauth2Controller.token);
 
-app.use('/api/v1', router);
+appServer.use('/api/v1', router);
 
 //Clean up any expired tokens
 //in the database - every 5 minutes [current]
 //not tested
 setInterval(()=> {
-	tokenController.removeExpired(err => {
+	removeExpired(err => {
 		if (err) {
 			console.error('Error removing expired tokens');
 		}
 	});
 }, 25000);
 
-app.listen(port);
+appServer.listen(port);
 
 console.log('Server listening on port ' + port);
 
-module.exports = app;
+export const app = appServer;

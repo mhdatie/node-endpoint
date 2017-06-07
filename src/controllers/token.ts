@@ -1,11 +1,10 @@
 'use strict';
-export {}
 
-// Required packages
-const Token = require('../models/token'); //used to interact with DB
+//used to interact with DB
+import {Token} from "../models/token";
 
 //not tested
-const removeExpired = cb => {
+export const removeExpired = cb => {
 	Token.find({}, (err, tokens) => {
 		tokens.forEach(token => {
 			if(new Date() > token.expirationDate){
@@ -18,8 +17,4 @@ const removeExpired = cb => {
 			}
 		});
 	});
-};
-
-module.exports = {
-	removeExpired
 };

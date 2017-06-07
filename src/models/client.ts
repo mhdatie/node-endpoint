@@ -1,5 +1,5 @@
 'use strict';
-export {}
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt-nodejs');
 
@@ -29,7 +29,7 @@ const ClientSchema = new mongoose.Schema({
 	}
 });
 
-ClientSchema.pre('save', callback => {
+ClientSchema.pre('save', function(callback) {
 	let client = this;
 
 	if(!client.isModified('secret')){
@@ -51,7 +51,7 @@ ClientSchema.pre('save', callback => {
 	});
 });
 
-ClientSchema.methods.verifySecret = (secret, cb) => {
+ClientSchema.methods.verifySecret = function(secret, cb){
 	bcrypt.compare(secret, this.secret, (err, isMatch) => {
 		if(err){
 			return cb(err);	
@@ -60,4 +60,4 @@ ClientSchema.methods.verifySecret = (secret, cb) => {
 	});
 };
 
-module.exports = mongoose.model('Client', ClientSchema);
+export const Client = mongoose.model('Client', ClientSchema);

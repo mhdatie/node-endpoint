@@ -1,6 +1,3 @@
-'use strict';
-export {}
-
 /**
 This is the client controller. This can be used in the future by implementing
 Authorization codes that enable users to grant third party apps (who are owned by user accounts)
@@ -10,10 +7,10 @@ For two legged auth (current) strategy, one secret client owned by the main serv
 enough for users authentication to grant them access and refresh tokens.
 **/
 'use strict';
+import { Client } from "../models/client";
 
-const Client = require('../models/client');
 
-const createClient = (req, res) => {
+export const createClient = (req, res) => {
 	let response: any = {};
 	let client = new Client();
 
@@ -42,7 +39,7 @@ const createClient = (req, res) => {
 };
 
 //get application clients of authenticated user
-const getClients = (req,res) => {
+export const getClients = (req,res) => {
 	let query = {userId : req.user._id}; //provided by passport
 	let response: any = {};
 	Client.find(query, (err, clients) => {
@@ -57,10 +54,4 @@ const getClients = (req,res) => {
 		response.description = 'Clients returned successfully';
 		return res.status(200).send(response);
 	});
-};
-
-
-module.exports = {
-	createClient,
-	getClients
 };

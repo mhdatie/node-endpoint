@@ -1,13 +1,12 @@
 'use strict';
-export {}
+import {Client} from "../models/client";
+import {Token} from "../models/token";
+import {User} from "../models/user";
 
 const passport = require('passport');
 const BasicStrategy = require('passport-http').BasicStrategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
 
-const User = require('../models/user');
-const Client = require('../models/client');
-const Token = require('../models/token');
 
 /**
 * Used to authenticate a client 
@@ -91,10 +90,5 @@ passport.use(new BearerStrategy(
   }
 ));
 
-const isAuthenticated = passport.authenticate('basic', {session: false});
-const isBearerAuthenticated = passport.authenticate('bearer', {session: false});
-
-module.exports = {
-  isAuthenticated,
-  isBearerAuthenticated
-};
+export const isAuthenticated = passport.authenticate('basic', {session: false});
+export const isBearerAuthenticated = passport.authenticate('bearer', {session: false});

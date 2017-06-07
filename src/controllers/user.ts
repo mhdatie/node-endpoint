@@ -1,12 +1,12 @@
 'use strict';
+import {User} from "../models/user";
 
 // Required packages
-const User = require('../models/user'); //used to interact with DB
 const userHelpers = require('./helpers/user');
 
 //Create functions for the User endpoint
 //TODO: Create CLIENT CREDENTIALS AUTH endpoint. ON SUCCESS: redirect to oauth2/token
-const createUser = (req,res) => {
+export const createUser = (req,res) => {
 	
 	userHelpers.validateCreateUser(req, (isError) => {
 
@@ -47,7 +47,7 @@ const createUser = (req,res) => {
 						}else{
 							response.data = null;
 							response.error = 'Bad Request';
-							response.description = 'Some Error Occured';
+							response.description = 'Some Error Occurred';
 							return res.status(400).send(response);
 						}
 					}
@@ -65,7 +65,7 @@ const createUser = (req,res) => {
 	});
 };
 
-const getUsers = (req,res) => {
+export const getUsers = (req,res) => {
 	//find all users
 	User.find((err,users) => {
 		let response: any = {};
@@ -83,7 +83,7 @@ const getUsers = (req,res) => {
 	});
 };
 
-const getUser = (req,res) => {
+export const getUser = (req,res) => {
 	//find by Id
 	User.findOne({username: req.params.username}, (err, user) => {
 		let response: any = {};
@@ -122,7 +122,7 @@ const getUser = (req,res) => {
 // };
 
 //use req.user.username
-const removeUser = (req,res) => {
+export const removeUser = (req,res) => {
 	//find by Id and remove from db
 	User.findByIdAndRemove(req.user._id, err => {
 		let response: any = {};
@@ -137,13 +137,4 @@ const removeUser = (req,res) => {
 		response.description = 'User deleted successfully';
 		return res.status(200).send(response);
 	});
-};
-
-//Export all user functions
-module.exports = {
-	createUser,
-	getUsers,
-	getUser,
-	//updateUser: updateUser,
-	removeUser
 };

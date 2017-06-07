@@ -1,5 +1,4 @@
 'use strict';
-export {}
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt-nodejs');
@@ -60,7 +59,7 @@ const UserSchema = new mongoose.Schema({
 });
 
 //hash password before save
-UserSchema.pre('save', callback => {
+UserSchema.pre('save', function(callback){
 	let user = this;
 
 	if(!user.isModified('password')){
@@ -85,7 +84,7 @@ UserSchema.pre('save', callback => {
 	});
 });
 
-UserSchema.methods.verifyPassword = (password, cb) => {
+UserSchema.methods.verifyPassword = function(password, cb){
 	bcrypt.compare(password, this.password, (err, isMatch) => {
 		if(err){
 			return cb(err);
@@ -94,4 +93,4 @@ UserSchema.methods.verifyPassword = (password, cb) => {
 	});
 };
 
-module.exports = mongoose.model('User', UserSchema);
+export const User = mongoose.model('User', UserSchema);

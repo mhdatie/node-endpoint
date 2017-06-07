@@ -1,6 +1,7 @@
 'use strict';
 
-const expect = require('chai').expect;
+import * as chai from 'chai';
+const expect = chai.expect;
 
 const success = (res) => {
 	expect(res.status).to.equal(200);
@@ -52,7 +53,7 @@ const validateUserList = (res) => {
 	// call validateUserObject or do something similar?	
 };
 
-module.exports = {
+export const _val = {
     success,
     validateAccessToken,
     validateAccessRefreshToken,

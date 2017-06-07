@@ -1,23 +1,22 @@
 'use strict';
-export {}
+import {Client} from "../models/client";
+import {User} from "../models/user";
+import {RefreshToken} from "../models/refreshtoken";
+import {Token} from "../models/token";
 
 const config = require('../../config');
 // Load required packages
 const oauth2orize = require('oauth2orize');
-const User = require('../models/user');
-const Client = require('../models/client');
-const Token = require('../models/token');
-const RefreshToken = require('../models/refreshtoken');
 /**
 	This controller controls the flow of OAuth
 **/
 //move to helpers-------------------------------
 
-const getRandomInt = (min, max) => {
+export const getRandomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-const uid = len => {
+export const uid = len => {
   let buf = [];
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let charlen = chars.length;

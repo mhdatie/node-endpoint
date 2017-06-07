@@ -1,5 +1,4 @@
 'use strict';
-export {}
 
 const mongoose = require('mongoose');
 
@@ -12,4 +11,4 @@ const RefreshTokenSchema   = new mongoose.Schema({
 });
 
 // Export the Mongoose model
-module.exports = mongoose.model('RefreshToken', RefreshTokenSchema);
+export const RefreshToken = mongoose.model('RefreshToken', RefreshTokenSchema);
