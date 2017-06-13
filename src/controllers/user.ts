@@ -38,12 +38,10 @@ export const createUser = (req,res) => {
 				user.save((err, user) => {
 					if(err){
 						if(err.hasOwnProperty('code') && err.code === 11000){
-							if(err.err.indexOf('username') > -1 || err.err.indexOf('email') > -1){
 								response.data = null;
 								response.error = 'Bad Request';
 								response.description = 'Username or Email already exists';
 								return res.status(400).send(response);
-							}
 						}else{
 							response.data = null;
 							response.error = 'Bad Request';

@@ -56,8 +56,8 @@ userRoute
 .delete(isBearerAuthenticated, removeUser);
 
 clientsRoute
-.post(createClient) //not required but implemented
-.get(isAuthenticated, getClients); // not rrequired but implemented
+.post(createClient) // required for tests
+.get(isAuthenticated, getClients); // not required but implemented
 
 accessTokenRoute
 .post(isAuthenticated, oauth2Controller.token);

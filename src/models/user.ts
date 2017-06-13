@@ -18,10 +18,6 @@ const UserSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
-	salt: {
-		type: String,
-		default: null
-	},
 	info: {
 		firstname:{
 			type: String,
@@ -77,7 +73,6 @@ UserSchema.pre('save', function(callback){
 				return callback(err);
 			} 
 			user.password = hash;
-			user.salt = salt;
 			callback();
 		});
 

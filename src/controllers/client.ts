@@ -38,11 +38,10 @@ export const createClient = (req, res) => {
 	});
 };
 
-//get application clients of authenticated user
+//get application clients
 export const getClients = (req,res) => {
-	let query = {userId : req.user._id}; //provided by passport
 	let response: any = {};
-	Client.find(query, (err, clients) => {
+	Client.find({}, (err, clients) => {
 		if(err){
 			response.data = null;
 			response.error = 'Bad Request';

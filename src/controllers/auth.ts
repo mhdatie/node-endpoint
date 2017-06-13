@@ -23,7 +23,7 @@ passport.use(new BasicStrategy(
         return callback(null, false);
       } 
 			
-			client.verifySecret(secret, (err, isMatch) => {
+      client.verifySecret(secret, (err, isMatch) => {
         if(err){
           return callback(err);
         } 
