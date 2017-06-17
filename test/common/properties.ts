@@ -6,6 +6,7 @@ export interface Client {
 }
 
 export interface  User {
+  id: any,
   email: string,
   username: string, //at least 5-16 and first char should be a letter
   password: string, //validation fails - should include at least one upper, one digit and one special, between 8-16 chars

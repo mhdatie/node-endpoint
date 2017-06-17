@@ -41,6 +41,7 @@ export const validateUserObject = (res) => {
 	expect(res.body.data.admin).to.be.false;
 };
 
+
 export const validateUserLimitedObject = (res) => {
 	expect(Object.keys(res.body).length).to.equal(1);
 	expect(res.body.username).to.have.property('username').that.match(/^[a-zA-Z][a-zA-Z0-9]{4,16}/);
