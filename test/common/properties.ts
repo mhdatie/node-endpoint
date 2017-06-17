@@ -18,9 +18,12 @@ export interface  User {
 export interface AccessForm {
   username: string,
   password : string,
-  token: string,
   grant_type: string,
   scope: string
+}
+
+export interface Token {
+    token: string
 }
 
 export interface RefreshForm {

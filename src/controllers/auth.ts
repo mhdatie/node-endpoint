@@ -13,28 +13,29 @@ const BearerStrategy = require('passport-http-bearer').Strategy;
 **/
 passport.use(new BasicStrategy(
 	(id, secret, callback) => {
-    let query = {id : id};
-		Client.findOne(query, (err, client) => {
-			if(err){
-        return callback(err);
-      } 
-
-      if(!client){
-        return callback(null, false);
-      } 
-			
-      client.verifySecret(secret, (err, isMatch) => {
+      let query = {id : id};
+      Client.findOne(query, (err, client) => {
         if(err){
           return callback(err);
-        } 
-        if(!isMatch){
+        }
+
+        if(!client){
           return callback(null, false);
         }
-        return callback(null, client);
-    
-      });
 
-    });
+        client.verifySecret(secret, (err, isMatch) => {
+          if(err){
+            return callback(err);
+          }
+
+          if(!isMatch){
+            return callback(null, false);
+          }
+
+          return callback(null, client);
+        });
+
+      });
 	}
 ));
 
