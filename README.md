@@ -52,12 +52,8 @@ The scope would be the same as before, **offline_access**, in order to use the r
 
 ## Todo:
 
-- [Validate](test/common/validate.ts#L50) user list.
-- Test for error cases.
-- Update [Gulp File](gulpfile.js) to run tests (currently tests run fine with `mocha`).
-- Add limited scope to sensitive data.
-- Improve server.ts file - add any missing configurations/routes/clean-up/etc.
-- Add HTTPS.
+- Configure Webpack to be able to run `npm start`
+- Add HTTPS
 
 ## License
 
