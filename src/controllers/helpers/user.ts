@@ -1,17 +1,17 @@
 'use strict';
 
-var _v = require('validator');
+const _v = require('validator');
 
 
-var validateCreateUser = function(req, callback){
-	var firstname = req.body.firstname,
+const validateCreateUser = function(req, callback){
+	let firstname = req.body.firstname,
 		lastname = req.body.lastname,
 		email = req.body.email,
 		username = req.body.username,
 		password = req.body.password,
 		gender = req.body.gender;
-	//initialize response variable
-	var err = null;	
+	//initialize response constiable
+	let err = null;
 
 	if(!_v.isAlpha(firstname)||
 		!_v.isAlpha(lastname)||

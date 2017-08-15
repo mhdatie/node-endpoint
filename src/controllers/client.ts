@@ -7,12 +7,12 @@ For two legged auth (current) strategy, one secret client owned by the main serv
 enough for users authentication to grant them access and refresh tokens.
 **/
 'use strict';
+import { Client } from "../models/client";
 
-var Client = require('../models/client.js');
 
-var createClient = function(req,res){
-	var response = {};
-	var client = new Client();
+export const createClient = (req, res) => {
+	let response: any = {};
+	let client = new Client();
 
 	//TODO: VALIDATE HELPER like create user
 
@@ -23,7 +23,7 @@ var createClient = function(req,res){
 	//client.userId = req.user._id; // api is being accessed by server's client and
 									//not 3rd party apps. Default is null for now.
 
-	client.save(function(err){
+	client.save(err => {
 		if(err){
 			response.data = null;
 			response.error = 'Bad Request';
@@ -38,11 +38,10 @@ var createClient = function(req,res){
 	});
 };
 
-//get application clients of authenticated user
-var getClients = function(req,res){
-	var query = {userId : req.user._id}; //provided by passport
-	var response = {};
-	Client.find(query, function(err, clients){
+//get application clients
+export const getClients = (req,res) => {
+	let response: any = {};
+	Client.find({}, (err, clients) => {
 		if(err){
 			response.data = null;
 			response.error = 'Bad Request';
@@ -54,10 +53,4 @@ var getClients = function(req,res){
 		response.description = 'Clients returned successfully';
 		return res.status(200).send(response);
 	});
-};
-
-
-module.exports = {
-	createClient : createClient,
-	getClients : getClients
 };

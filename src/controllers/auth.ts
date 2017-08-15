@@ -1,40 +1,41 @@
 'use strict';
+import {Client} from "../models/client";
+import {Token} from "../models/token";
+import {User} from "../models/user";
 
-var passport = require('passport');
-var BasicStrategy = require('passport-http').BasicStrategy;
-var BearerStrategy = require('passport-http-bearer').Strategy;
+const passport = require('passport');
+const BasicStrategy = require('passport-http').BasicStrategy;
+const BearerStrategy = require('passport-http-bearer').Strategy;
 
-var User = require('../models/user');
-var Client = require('../models/client');
-var Token = require('../models/token');
 
 /**
 * Used to authenticate a client 
 **/
 passport.use(new BasicStrategy(
-	function(id, secret, callback){
-    var query = {id : id};
-		Client.findOne(query, function(err, client){
-			if(err){
-        return callback(err);
-      } 
-
-      if(!client){
-        return callback(null, false);
-      } 
-			
-			client.verifySecret(secret, function(err, isMatch){
+	(id, secret, callback) => {
+      let query = {id : id};
+      Client.findOne(query, (err, client) => {
         if(err){
           return callback(err);
-        } 
-        if(!isMatch){
+        }
+
+        if(!client){
           return callback(null, false);
         }
-        return callback(null, client);
-    
-      });
 
-    });
+        client.verifySecret(secret, (err, isMatch) => {
+          if(err){
+            return callback(err);
+          }
+
+          if(!isMatch){
+            return callback(null, false);
+          }
+
+          return callback(null, client);
+        });
+
+      });
 	}
 ));
 
@@ -43,8 +44,8 @@ passport.use(new BasicStrategy(
 * Used to validate an access token for a user.
 **/
 passport.use(new BearerStrategy(
-  function(accessToken, callback) {
-    Token.findOne({value: accessToken }, function (err, token)  {
+  (accessToken, callback) => {
+    Token.findOne({value: accessToken }, (err, token) => {
       if (err){
         return callback(err); 
       } 
@@ -58,7 +59,7 @@ passport.use(new BearerStrategy(
       if(new Date() > token.expirationDate){
 
         //delete token
-        Token.findByIdAndRemove(token._id, function(err){
+        Token.findByIdAndRemove(token._id, (err) => {
           if(err){
             return callback(err);
           } 
@@ -70,7 +71,7 @@ passport.use(new BearerStrategy(
       }else{
           if(token.userId !== null){
 
-            User.findOne({ _id: token.userId }, function (err, user) {
+            User.findOne({ _id: token.userId },  (err, user) => {
               if (err){
                 return callback(err);
               } 
@@ -90,5 +91,5 @@ passport.use(new BearerStrategy(
   }
 ));
 
-exports.isAuthenticated = passport.authenticate('basic', {session: false});
-exports.isBearerAuthenticated = passport.authenticate('bearer', {session: false});
+export const isAuthenticated = passport.authenticate('basic', {session: false});
+export const isBearerAuthenticated = passport.authenticate('bearer', {session: false});

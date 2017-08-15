@@ -1,45 +1,43 @@
 'use strict';
+import {Client} from "../models/client";
+import {User} from "../models/user";
+import {RefreshToken} from "../models/refreshtoken";
+import {Token} from "../models/token";
+
+const config = require('../../config');
+// Load required packages
+const oauth2orize = require('oauth2orize');
 /**
 	This controller controls the flow of OAuth
 **/
 //move to helpers-------------------------------
 
-function getRandomInt(min, max) {
+export const getRandomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
-function uid (len) {
-  var buf = [];
-  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charlen = chars.length;
+export const uid = len => {
+  let buf = [];
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let charlen = chars.length;
 
-  for (var i = 0; i < len; ++i) {
+  for (let i = 0; i < len; ++i) {
     buf.push(chars[getRandomInt(0, charlen - 1)]);
   }
 
   return buf.join('');
-}
-
-//------------------------------------------------
-
-var config = require('../../config');
-// Load required packages
-var oauth2orize = require('oauth2orize');
-var User = require('../models/user');
-var Client = require('../models/client');
-var Token = require('../models/token');
-var RefreshToken = require('../models/refreshtoken');
+};
 
 //create OAuth 2.0 server
-var server = oauth2orize.createServer();
+const server = oauth2orize.createServer();
 
 //Register Serialization
-server.serializeClient(function(client, callback){
+server.serializeClient((client, callback) => {
 	return callback(null, client._id);
 });
 //Register Deserialization
-server.deserializeClient(function(id, callback){
-	Client.findOne({ _id : id }, function(err, client){
+server.deserializeClient((id, callback) => {
+	Client.findOne({ _id : id }, (err, client) => {
 		if(err){
 		 return callback(err);
 		}
@@ -54,9 +52,9 @@ server.deserializeClient(function(id, callback){
 * from the token request for verification. If these values are validated, the
 * application issues an access token on behalf of the user who authorized the code.
 */
-server.exchange(oauth2orize.exchange.password(function (client, username, password, scope, done) {
+server.exchange(oauth2orize.exchange.password((client, username, password, scope, done) => {
 
-	User.findOne({username : username}, function(err, user){
+	User.findOne({username : username}, (err, user) => {
 		if(err){
 			return done(err);
 		} 
@@ -65,7 +63,7 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 			return done(null, false);
 		} 
 
-		user.verifyPassword(password, function(err, isMatch){
+		user.verifyPassword(password, (err, isMatch) => {
 			if(err){
 				return done(err);
 			} 
@@ -74,9 +72,9 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 				return done(null, false);
 			} 
 			
-			var value = uid(config.token.accessTokenLength);
+			let value = uid(config.token.accessTokenLength);
 
-			var token = new Token();
+			let token = new Token();
 
 			token.value = value;
 			token.userId = user._id;
@@ -86,15 +84,15 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 				token.scope = scope;
 			}
 			
-			token.save(function (err) {
+			token.save(err => {
 				if (err) {
 					return done(err);
 				}
 
-				var refreshToken = null;
+				let refreshToken = null;
 
 				if(scope && scope.indexOf('offline_access') !== -1){
-					var refreshValue = uid(config.token.refreshTokenLength);
+					let refreshValue = uid(config.token.refreshTokenLength);
 					refreshToken = new RefreshToken();
 				
 					refreshToken.value = refreshValue;
@@ -103,14 +101,14 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 					refreshToken.scope = scope;
 
 					//save refresh token
-					refreshToken.save(function(err){
+					refreshToken.save( err => {
 						if(err){
 							return done(err);
 						}
-						return done(null, {token:token, refreshToken:refreshToken, expiresIn: config.token.expiresIn}); 
+						return done(null, {token:token, refreshToken: refreshToken, expiresIn: config.token.expiresIn});
 					});
 				}else{ //no refresh token - null
-					return done(null, {token:token, refreshToken:refreshToken, expiresIn: config.token.expiresIn});
+					return done(null, {token: token, refreshToken: refreshToken, expiresIn: config.token.expiresIn});
 				}
 
 			});
@@ -126,20 +124,23 @@ server.exchange(oauth2orize.exchange.password(function (client, username, passwo
 * request for verification. If this value is validated, the application issues an access
 * token on behalf of the client who authorized the code
 */
-server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken, done) {
-	RefreshToken.findOne({value: refreshToken }, function (err, rtoken){
+server.exchange(oauth2orize.exchange.refreshToken( (client, refreshToken, done) => {
+	RefreshToken.findOne({value: refreshToken },  (err, rtoken) => {
 		if(err){
 		 return done(err);
 		}
+
 		if(!rtoken){
 		 return done(null, false);
 		}
+
 		if(String(client._id) !== String(rtoken.clientId)){
 		 return done(null, false); //bad request
 		}
-		var value = uid(256);
 
-		var token = new Token();
+		let value = uid(256);
+
+		let token = new Token();
 
 		token.value = value;
 		token.userId = rtoken.userId;
@@ -147,7 +148,7 @@ server.exchange(oauth2orize.exchange.refreshToken(function (client, refreshToken
 		token.scope = rtoken.scope;
 		token.expirationDate = config.token.calculateExpirationDate();
 
-		token.save(function(err){
+		token.save(err => {
 			if(err){
 			 return done(err);
 			}

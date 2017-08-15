@@ -1,15 +1,16 @@
 'use strict';
+import {User} from "../models/user";
+
 // Required packages
-var User = require('../models/user'); //used to interact with DB
-var userHelpers = require('./helpers/user');
+const userHelpers = require('./helpers/user');
 
 //Create functions for the User endpoint
 //TODO: Create CLIENT CREDENTIALS AUTH endpoint. ON SUCCESS: redirect to oauth2/token
-var createUser = function(req,res){		
+export const createUser = (req,res) => {
 	
-	userHelpers.validateCreateUser(req, function(isError){
+	userHelpers.validateCreateUser(req, (isError) => {
 
-		var response = {};
+		let response: any = {};
 
 		if(isError){
 			response.error = 'Bad Request';
@@ -17,7 +18,7 @@ var createUser = function(req,res){
 			return res.status(400).send(response);
 		} 
 
-		var user = new User();
+		let user = new User();
 
 		user.email = req.body.email;
 		user.username = req.body.username;
@@ -26,27 +27,25 @@ var createUser = function(req,res){
 		user.info.lastname = req.body.lastname;
 		user.info.gender = req.body.gender;
 
-		user.validate(function(err){
+		user.validate(err => {
 			if(err){
 				response.data = null;
 				response.error = 'Bad Request';
 				response.description = 'Missing Fields';
 				return res.status(400).send(response);
 			}else{ 
-				//TODO: create a function for error handling or use next()
-				user.save(function(err, user){
+				//TODO: create a  for error handling or use next()
+				user.save((err, user) => {
 					if(err){
 						if(err.hasOwnProperty('code') && err.code === 11000){
-							if(err.err.indexOf('username') > -1 || err.err.indexOf('email') > -1){
 								response.data = null;
 								response.error = 'Bad Request';
 								response.description = 'Username or Email already exists';
 								return res.status(400).send(response);
-							}
 						}else{
 							response.data = null;
 							response.error = 'Bad Request';
-							response.description = 'Some Error Occured';
+							response.description = 'Some Error Occurred';
 							return res.status(400).send(response);
 						}
 					}
@@ -64,10 +63,10 @@ var createUser = function(req,res){
 	});
 };
 
-var getUsers = function(req,res){
+export const getUsers = (req,res) => {
 	//find all users
-	User.find(function(err,users){
-		var response = {};
+	User.find((err,users) => {
+		let response: any = {};
 		if(err){
 			response.data = null;
 			response.error = 'Bad Request';
@@ -82,10 +81,10 @@ var getUsers = function(req,res){
 	});
 };
 
-var getUser = function(req,res){
+export const getUser = (req,res) => {
 	//find by Id
-	User.findOne({username: req.params.username}, function(err, user){
-		var response = {};
+	User.findOne({username: req.params.username}, (err, user) => {
+		let response: any = {};
 		if(err){
 			response.data = null;
 			response.error = 'Bad Request';
@@ -105,7 +104,7 @@ var getUser = function(req,res){
 			return res.status(200).send(response);
 		}else{
 			//TODO: limited scope to visitor.
-			var u = {
+			let u = {
 				username: user.username //example
 			};
 			return res.json(u);
@@ -115,16 +114,16 @@ var getUser = function(req,res){
 
 //REMOVE AND UPDATE should use req.user object to 
 //remove and update the authenticated user only.
-// var updateUser = function(req,res){
+// var updateUser = (req,res){
 // 	//find by Id, get updated values, save into db
 // 	//todo......req.user.username
 // };
 
 //use req.user.username
-var removeUser = function(req,res){
+export const removeUser = (req,res) => {
 	//find by Id and remove from db
-	User.findByIdAndRemove(req.user._id, function(err){
-		var response = {};
+	User.findByIdAndRemove(req.user._id, err => {
+		let response: any = {};
 		if(err){
 			response.data = null;
 			response.error = 'Bad Request';
@@ -137,19 +136,3 @@ var removeUser = function(req,res){
 		return res.status(200).send(response);
 	});
 };
-
-//Export all user functions
-module.exports = {
-	createUser: createUser,
-	getUsers: getUsers,
-	getUser: getUser,
-	//updateUser: updateUser,
-	removeUser: removeUser
-};
-
-//alternative:
-// exports.createUser = createUser;
-// exports.getUsers = getUsers;
-// exports.getUser = getUser;
-// exports.updateUser = updateUser;
-// exports.removeUser = removeUser;

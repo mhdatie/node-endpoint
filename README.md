@@ -15,7 +15,7 @@ Basic use case:
 
 - User Authorization/Registration.
 
-##Database:
+## Database:
 
 - MongoDB, with Mongoose API
 
@@ -23,7 +23,7 @@ For testing, it is recommended not to mess around with the main database, instea
 
 [Read More](http://stackoverflow.com/a/11571916/2898754)	
 
-##Authentication
+## Authentication
 
 - [Passport](http://passportjs.org/) module.
 - **Strategy**:
@@ -32,7 +32,7 @@ For testing, it is recommended not to mess around with the main database, instea
 
 This project will provide a full implementation of the server application with documentation. 
 
-##Current Implementation:
+## Current Implementation:
 
 The project implements Resource Owner Password Credentials for requests. This method HAS to be implemented in HTTPS (so far in HTTP). 
 
@@ -50,17 +50,13 @@ In case the access token was expired, redirect the user from the client side to 
 
 The scope would be the same as before, **offline_access**, in order to use the refresh token as many as the user wants to gain new access tokens. [Reference](http://stackoverflow.com/questions/8953983/do-google-refresh-token-expire)
 
-##Todo:
+## Todo:
 
-- [Validate](test/common/validate.js#L50) user list.
-- Test for error cases.
-- Update [Gulp File](gulpfile.js) to run tests (currently tests run fine with `mocha`).
-- Add limited scope to sensitive data.
-- Improve server.js file - add any missing configurations/routes/clean-up/etc.
-- Add HTTPS.
+- Configure Webpack to be able to run `npm start`
+- Add HTTPS
 
-##License
+## License
 
 MIT
 
-###This code is open for public reviews, so feel free. Thanks.
+### This code is open for public reviews, so feel free. Thanks.

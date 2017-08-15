@@ -1,9 +1,9 @@
 'use strict';
 
-var mongoose = require('mongoose');
-var bcrypt = require('bcrypt-nodejs');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt-nodejs');
 
-var UserSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
 	email: {
 		type: String,
 		unique: true,
@@ -17,10 +17,6 @@ var UserSchema = new mongoose.Schema({
 	password: {
 		type: String,
 		required: true
-	},
-	salt: {
-		type: String,
-		default: null
 	},
 	info: {
 		firstname:{
@@ -60,30 +56,31 @@ var UserSchema = new mongoose.Schema({
 
 //hash password before save
 UserSchema.pre('save', function(callback){
-	var user = this;
+	let user = this;
 
 	if(!user.isModified('password')){
 		return callback();
 	}
 
-	bcrypt.genSalt(5, function(err, salt){
+	bcrypt.genSalt(5, (err, salt) => {
+
 		if(err){
 			return callback(err);	
 		} 
 
-		bcrypt.hash(user.password, salt, null, function(err, hash){
+		bcrypt.hash(user.password, salt, null, (err, hash) => {
 			if(err){
 				return callback(err);
 			} 
 			user.password = hash;
-			user.salt = salt;
 			callback();
 		});
+
 	});
 });
 
 UserSchema.methods.verifyPassword = function(password, cb){
-	bcrypt.compare(password, this.password, function(err, isMatch){
+	bcrypt.compare(password, this.password, (err, isMatch) => {
 		if(err){
 			return cb(err);
 		} 
@@ -91,4 +88,4 @@ UserSchema.methods.verifyPassword = function(password, cb){
 	});
 };
 
-module.exports = mongoose.model('User', UserSchema);
+export const User = mongoose.model('User', UserSchema);

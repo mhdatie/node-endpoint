@@ -1,8 +1,9 @@
-// Load required packages
-var mongoose = require('mongoose');
+'use strict';
+
+const mongoose = require('mongoose');
 
 // Define our token schema
-var RefreshTokenSchema   = new mongoose.Schema({
+const RefreshTokenSchema   = new mongoose.Schema({
   value: { type: String, required: true },
   userId: { type: String, required: true },
   clientId: { type: String, required: true },
@@ -10,4 +11,4 @@ var RefreshTokenSchema   = new mongoose.Schema({
 });
 
 // Export the Mongoose model
-module.exports = mongoose.model('RefreshToken', RefreshTokenSchema);
+export const RefreshToken = mongoose.model('RefreshToken', RefreshTokenSchema);

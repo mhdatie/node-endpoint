@@ -1,8 +1,9 @@
-// Load required packages
-var mongoose = require('mongoose');
+'use strict';
+
+const mongoose = require('mongoose');
 
 // Define our token schema
-var TokenSchema   = new mongoose.Schema({
+const TokenSchema   = new mongoose.Schema({
   value: { type: String, required: true },
   userId: { type: String, required: true }, //if null -> client only
   clientId: { type: String, required: true },
@@ -11,4 +12,4 @@ var TokenSchema   = new mongoose.Schema({
 });
 
 // Export the Mongoose model
-module.exports = mongoose.model('Token', TokenSchema);
+export const Token = mongoose.model('Token', TokenSchema);
