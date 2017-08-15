@@ -55,6 +55,14 @@ The scope would be the same as before, **offline_access**, in order to use the r
 - Configure Webpack to be able to run `npm start`
 - Add HTTPS
 
+## Installation
+
+`npm install`
+
+## Run the app
+
+`npm run dev`
+
 ## License
 
 MIT
